@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.RadioButton?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.Pane?>
+
+
+<AnchorPane prefHeight="370.0" prefWidth="502.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.courseprifs.fxController.UserForm">
+   <children>
+      <RadioButton fx:id="userRadio" layoutX="59.0" layoutY="39.0" mnemonicParsing="false" onAction="#disableFields" selected="true" text="User">
+         <toggleGroup>
+            <ToggleGroup fx:id="userType" />
+         </toggleGroup>
+      </RadioButton>
+      <RadioButton fx:id="restaurantRadio" layoutX="147.0" layoutY="39.0" mnemonicParsing="false" onAction="#disableFields" text="Restaurant" toggleGroup="$userType" />
+      <RadioButton fx:id="clientRadio" layoutX="282.0" layoutY="39.0" mnemonicParsing="false" onAction="#disableFields" text="Client" toggleGroup="$userType" />
+      <RadioButton fx:id="driverRadio" layoutX="383.0" layoutY="39.0" mnemonicParsing="false" onAction="#disableFields" text="Driver" toggleGroup="$userType" />
+      <TextField fx:id="loginField" layoutX="59.0" layoutY="76.0" promptText="Login" />
+      <PasswordField fx:id="passwordField" layoutX="60.0" layoutY="113.0" promptText="Password" />
+      <PasswordField fx:id="rePasswordField" layoutX="60.0" layoutY="159.0" promptText="Re-Password" />
+      <TextField fx:id="NameField" layoutX="60.0" layoutY="204.0" promptText="Name" />
+      <TextField fx:id="surnameField" layoutX="60.0" layoutY="247.0" promptText="Surname" />
+      <TextField fx:id="phoneNumberField" layoutX="59.0" layoutY="286.0" promptText="Phone number" />
+      <Button layoutX="300.0" layoutY="299.0" mnemonicParsing="false" text="Create" />
+      <Pane fx:id="userField" layoutX="250.0" layoutY="72.0" prefHeight="95.0" prefWidth="200.0">
+         <children>
+            <TextField layoutX="13.0" layoutY="14.0" prefHeight="26.0" prefWidth="175.0" promptText="AddressField" />
+            <DatePicker layoutX="13.0" layoutY="51.0" />
+         </children>
+      </Pane>
+      <Pane layoutX="251.0" layoutY="173.0" prefHeight="200.0" prefWidth="200.0" />
+   </children>
+</AnchorPane>
