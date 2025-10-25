@@ -1,6 +1,9 @@
 package com.example.courseprifs.model;
 
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.io.Serializable;
@@ -9,8 +12,14 @@ import java.time.LocalDateTime;
 
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Entity
 public class User implements Serializable {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     protected int id;
+    @Column(unique = true)
     protected String login;
     protected String password;
     protected String name;
@@ -20,7 +29,7 @@ public class User implements Serializable {
     protected LocalDateTime dateUpdated;
     protected boolean isAdmin;
 
-    public User(String login, String password, String name, String surname, String phoneNumber) {
+    public User(String login, String password, String name, String surname, String phoneNumber, boolean isAdmin) {
         this.login = login;
         this.password = password;
         this.name = name;

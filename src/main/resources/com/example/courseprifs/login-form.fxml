@@ -5,10 +5,11 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
 
-<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.courseprifs.fxController.LoginForm">
+<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/25" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.example.courseprifs.fxControllers.LoginForm">
    <children>
       <TextField fx:id="userField" layoutX="132.0" layoutY="66.0" prefHeight="13.0" prefWidth="335.0" promptText="Username" />
       <PasswordField fx:id="passwordField" layoutX="132.0" layoutY="128.0" prefHeight="26.0" prefWidth="335.0" promptText="Password" />
-      <Button fx:id="loginButton" layoutX="252.0" layoutY="262.0" mnemonicParsing="false" onAction="#validateAndLoad" prefHeight="26.0" prefWidth="96.0" text="Login" />
+      <Button fx:id="loginButton" layoutX="132.0" layoutY="263.0" mnemonicParsing="false" onAction="#validateAndLoad" prefHeight="26.0" prefWidth="96.0" text="Login" />
+      <Button fx:id="registerButton" layoutX="371.0" layoutY="263.0" mnemonicParsing="false" onAction="#registerNewUser" prefHeight="26.0" prefWidth="96.0" text="Register" />
    </children>
 </AnchorPane>
