@@ -2,7 +2,6 @@ package com.example.courseprifs.fxControllers;
 
 import com.example.courseprifs.hibernateControl.GenericHibernate;
 import com.example.courseprifs.model.User;
-import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import javafx.scene.control.*;
 import javafx.scene.layout.Pane;
@@ -56,7 +55,7 @@ public class UserForm {
                     surnameField.getText(),
                     phoneNumberField.getText(),
                     true);
-            genericHibernate.createUser(user);
+            genericHibernate.create(user);
         }
     }
 
@@ -66,6 +65,13 @@ public class UserForm {
         boolean isRestaurant = restaurantRadio.isSelected();
         boolean isClient = clientRadio.isSelected();
         boolean isDriver = driverRadio.isSelected();
+        userField.setDisable(false);
+        resPane.setDisable(true);
+        resPane.setVisible(false);
+        driverPane.setDisable(true);
+        driverPane.setVisible(false);
+        clientPane.setDisable(true);
+        clientPane.setVisible(false);
 
         if(isUser){
         userField.setDisable(false);

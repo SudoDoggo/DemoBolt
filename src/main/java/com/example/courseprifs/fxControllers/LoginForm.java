@@ -1,12 +1,16 @@
 package com.example.courseprifs.fxControllers;
 
 import com.example.courseprifs.HelloApplication;
+import com.example.courseprifs.hibernateControl.CustomHibernate;
+import com.example.courseprifs.hibernateControl.GenericHibernate;
+import com.example.courseprifs.model.User;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
+import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.PasswordField;
 import javafx.scene.control.TextField;
@@ -25,11 +29,18 @@ public class LoginForm {
     private EntityManagerFactory emf = Persistence.createEntityManagerFactory("wolt");
 
     public void validateAndLoad() throws IOException {
-        FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("main-form.fxml"));
-        Scene scene = new Scene(fxmlLoader.load());
-        Stage stage = (Stage) userField.getScene().getWindow();
-        stage.setScene(scene);
-        stage.show();
+        CustomHibernate customHibernate = new CustomHibernate(emf);
+        User user = customHibernate.getUserByCredentials(userField.getText(), passwordField.getText());
+        if(user!=null){
+            FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("main-form.fxml"));
+            Scene scene = new Scene(fxmlLoader.load());
+            Stage stage = (Stage) userField.getScene().getWindow();
+            stage.setScene(scene);
+            stage.show();
+        }else{
+            FxUtils.generateAlert(Alert.AlertType.WARNING, "Warning", "Something went wrong during login", "No such user or wrong credentials");
+        }
+
     }
 
     public void registerNewUser() throws IOException {
