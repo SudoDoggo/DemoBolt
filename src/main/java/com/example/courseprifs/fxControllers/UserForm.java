@@ -1,16 +1,15 @@
 package com.example.courseprifs.fxControllers;
 
 import com.example.courseprifs.hibernateControl.GenericHibernate;
-import com.example.courseprifs.model.Cuisine;
-import com.example.courseprifs.model.Restaurant;
-import com.example.courseprifs.model.User;
-import com.example.courseprifs.model.VehicleType;
+import com.example.courseprifs.model.*;
 import jakarta.persistence.EntityManagerFactory;
+import javafx.event.ActionEvent;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.layout.Pane;
 
 import java.net.URL;
+import java.time.LocalTime;
 import java.util.ResourceBundle;
 
 public class UserForm implements Initializable {
@@ -33,7 +32,7 @@ public class UserForm implements Initializable {
     public TextField resAddress;
     public TextField resPhone;
     public TextField resEmail;
-    public ChoiceBox<Cuisine> resCuisineType;
+    public ComboBox<CuisineType> resCuisineType;
     public TextField resDeliFee;
     public TextField resEstDeliTime;
     public TextField resOpeningTime;
@@ -46,29 +45,77 @@ public class UserForm implements Initializable {
     public ComboBox<VehicleType> driverVehicleType;
     public TextField driverVehicleInfo;
     public Pane resPane;
+    public TextField clientAddress;
 
     private EntityManagerFactory emf;
     private GenericHibernate genericHibernate;
+    private User userForUpdate;
+    private boolean isForUpdate;
 
-    public void setData(EntityManagerFactory emf) {
-        this.emf = emf;
-        this.genericHibernate = new GenericHibernate(emf);
+    public void setData(EntityManagerFactory entityManagerFactory, User user, boolean isForUpdate) {
+        this.emf = entityManagerFactory;
+        this.genericHibernate = new GenericHibernate(entityManagerFactory);
+        this.userForUpdate = user;
+        this.isForUpdate = isForUpdate;
+        fillUserDataForUpdate();
     }
+
     public void createNewUser(){
         if(userRadio.isSelected()){
             User user = new User(loginField.getText(),
                     passwordField.getText(),
                     nameField.getText(),
                     surnameField.getText(),
-                    phoneNumberField.getText(),
-                    true);
+                    phoneNumberField.getText());
             genericHibernate.create(user);
-        }
-        else if(restaurantRadio.isSelected()){
-            Restaurant restaurant = new Restaurant();
+        } else if(restaurantRadio.isSelected()){
+            Restaurant restaurant = new Restaurant(loginField.getText(),
+                    passwordField.getText(),
+                    nameField.getText(),
+                    surnameField.getText(),
+                    resPhone.getText(),
+                    resAddress.getText(),
+                    resName.getText(),
+                    resDesc.getText(),
+                    resEmail.getText(),
+                    resCuisineType.getValue(),
+                    LocalTime.parse(resOpeningTime.getText()),
+                    LocalTime.parse(resClosingTime.getText()),
+                    Double.parseDouble(resDeliFee.getText()));
+            genericHibernate.create(restaurant);
+        } else if(clientRadio.isSelected()){
+            BasicUser basicUser = new BasicUser(loginField.getText(),
+                    passwordField.getText(),
+                    nameField.getText(),
+                    surnameField.getText(),
+                    phoneNumberField.getText(),
+                    clientAddress.getText());
+            genericHibernate.create(basicUser);
+        }else if(driverRadio.isSelected()){
+            Driver driver = new Driver(loginField.getText(),
+                    passwordField.getText(),
+                    nameField.getText(),
+                    surnameField.getText(),
+                    phoneNumberField.getText(),
+                    driverAddress.getText(),
+                    driverLicense.getText(),
+                    driverBirthDate.getValue(),
+                    driverVehicleType.getValue(),
+                    driverVehicleInfo.getText());
+            genericHibernate.create(driver);
         }
     }
 
+
+    private void fillUserDataForUpdate() {
+        if(userForUpdate != null && isForUpdate){
+            if(userForUpdate instanceof User){
+                loginField.setText(userForUpdate.getLogin());
+                passwordField.setText(userForUpdate.getPassword());
+                //likusius reiktu pabaigti
+            }
+        }
+    }
 
     public void disableFields(){
         boolean isUser = userRadio.isSelected();
@@ -92,6 +139,8 @@ public class UserForm implements Initializable {
             driverPane.setVisible(false);
             clientPane.setDisable(true);
             clientPane.setVisible(false);
+            phoneNumberField.setDisable(true);
+            phoneNumberField.setVisible(false);
 
         } else if (isClient) {
             resPane.setDisable(true);
@@ -111,8 +160,13 @@ public class UserForm implements Initializable {
         }
     }
 
+    public void updateUser(ActionEvent actionEvent) {
+    }
+
     @Override
     public void initialize(URL location, ResourceBundle resources) {
         disableFields();
+        driverVehicleType.getItems().addAll(VehicleType.values());
+        resCuisineType.getItems().addAll(CuisineType.values());
     }
 }

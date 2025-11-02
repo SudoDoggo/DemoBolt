@@ -1,6 +1,9 @@
 package com.example.courseprifs.model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.OneToMany;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -24,7 +27,7 @@ public class BasicUser extends User{
     protected List<Review> feedback;
 
     public BasicUser(String login, String password, String name, String surname, String phoneNumber, String address) {
-        super(login, password, name, surname, phoneNumber,false);
+        super(login, password, name, surname, phoneNumber);
         this.address = address;
         this.myReviews = new ArrayList<>();
         this.feedback = new ArrayList<>();

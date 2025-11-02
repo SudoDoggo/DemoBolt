@@ -7,14 +7,14 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.io.Serializable;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
 @Entity
+@AllArgsConstructor
+@NoArgsConstructor
+//@MappedSuperclass
 public class User implements Serializable {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -29,7 +29,7 @@ public class User implements Serializable {
     protected LocalDateTime dateUpdated;
     protected boolean isAdmin;
 
-    public User(String login, String password, String name, String surname, String phoneNumber, boolean isAdmin) {
+    public User(String login, String password, String name, String surname, String phoneNumber) {
         this.login = login;
         this.password = password;
         this.name = name;
@@ -39,9 +39,7 @@ public class User implements Serializable {
 
     @Override
     public String toString() {
-        return "User{" +
-                "surname='" + surname + '\'' +
-                ", name='" + name + '\'' +
-                '}';
+        return "Name: " + name + "Surname " + surname;
     }
+
 }

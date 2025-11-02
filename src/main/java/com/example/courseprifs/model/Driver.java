@@ -20,11 +20,13 @@ public class Driver extends BasicUser{
     private LocalDate bDate;
     @Enumerated(EnumType.STRING)
     private VehicleType vehicleType;
+    private String vehicleInfo;
 
-    public Driver(String login, String password, String name, String surname, String phoneNumber, String address, String licence, LocalDate bDate, VehicleType vehicleType) {
+    public Driver(String login, String password, String name, String surname, String phoneNumber, String address, String licence, LocalDate bDate, VehicleType vehicleType, String vehicleInfo) {
         super(login, password, name, surname, phoneNumber, address);
         this.licence = licence;
         this.bDate = bDate;
         this.vehicleType = vehicleType;
+        this.vehicleInfo = vehicleInfo;
     }
 }
