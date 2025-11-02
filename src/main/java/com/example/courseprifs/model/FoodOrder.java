@@ -28,4 +28,11 @@ public class FoodOrder {
     @ManyToOne
     private Restaurant restaurant;
 
+    public FoodOrder(String name, Double price, BasicUser buyer, Restaurant restaurant) {
+        this.price = price;
+        this.name = name;
+        this.buyer = buyer;
+        this.restaurant = restaurant;
+    }
+
 }

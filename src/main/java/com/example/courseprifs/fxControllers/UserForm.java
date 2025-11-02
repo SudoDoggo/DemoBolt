@@ -1,12 +1,19 @@
 package com.example.courseprifs.fxControllers;
 
 import com.example.courseprifs.hibernateControl.GenericHibernate;
+import com.example.courseprifs.model.Cuisine;
+import com.example.courseprifs.model.Restaurant;
 import com.example.courseprifs.model.User;
+import com.example.courseprifs.model.VehicleType;
 import jakarta.persistence.EntityManagerFactory;
+import javafx.fxml.Initializable;
 import javafx.scene.control.*;
 import javafx.scene.layout.Pane;
 
-public class UserForm {
+import java.net.URL;
+import java.util.ResourceBundle;
+
+public class UserForm implements Initializable {
     public RadioButton userRadio;
     public RadioButton restaurantRadio;
     public RadioButton clientRadio;
@@ -26,7 +33,7 @@ public class UserForm {
     public TextField resAddress;
     public TextField resPhone;
     public TextField resEmail;
-    public ChoiceBox resCuisineType;
+    public ChoiceBox<Cuisine> resCuisineType;
     public TextField resDeliFee;
     public TextField resEstDeliTime;
     public TextField resOpeningTime;
@@ -36,7 +43,7 @@ public class UserForm {
     public Pane restaurantPane;
     public TextField driverLicense;
     public DatePicker driverBirthDate;
-    public ComboBox driverVehicleType;
+    public ComboBox<VehicleType> driverVehicleType;
     public TextField driverVehicleInfo;
     public Pane resPane;
 
@@ -57,6 +64,9 @@ public class UserForm {
                     true);
             genericHibernate.create(user);
         }
+        else if(restaurantRadio.isSelected()){
+            Restaurant restaurant = new Restaurant();
+        }
     }
 
 
@@ -65,22 +75,15 @@ public class UserForm {
         boolean isRestaurant = restaurantRadio.isSelected();
         boolean isClient = clientRadio.isSelected();
         boolean isDriver = driverRadio.isSelected();
-        userField.setDisable(false);
-        resPane.setDisable(true);
-        resPane.setVisible(false);
-        driverPane.setDisable(true);
-        driverPane.setVisible(false);
-        clientPane.setDisable(true);
-        clientPane.setVisible(false);
 
-        if(isUser){
-        userField.setDisable(false);
-        resPane.setDisable(true);
-        resPane.setVisible(false);
-        driverPane.setDisable(true);
-        driverPane.setVisible(false);
-        clientPane.setDisable(true);
-        clientPane.setVisible(false);
+
+        if(isUser){;
+            resPane.setDisable(true);
+            resPane.setVisible(false);
+            driverPane.setDisable(true);
+            driverPane.setVisible(false);
+            clientPane.setDisable(true);
+            clientPane.setVisible(false);
         }
         else if(isRestaurant){
             resPane.setDisable(false);
@@ -106,5 +109,10 @@ public class UserForm {
             clientPane.setDisable(true);
             clientPane.setVisible(false);
         }
+    }
+
+    @Override
+    public void initialize(URL location, ResourceBundle resources) {
+        disableFields();
     }
 }
