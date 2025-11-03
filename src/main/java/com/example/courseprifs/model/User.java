@@ -37,9 +37,18 @@ public class User implements Serializable {
         this.phoneNumber = phoneNumber;
     }
 
+    public User(String login, String password, String name, String surname, String phoneNumber, LocalDateTime dateCreated){
+        this.login = login;
+        this.password = password;
+        this.name = name;
+        this.surname = surname;
+        this.phoneNumber = phoneNumber;
+        this.dateCreated = dateCreated;
+    }
+
     @Override
     public String toString() {
-        return "Name: " + name + "Surname " + surname;
+        return "Name: " + name + " Surname " + surname;
     }
 
 }

@@ -9,6 +9,8 @@ import javafx.scene.control.*;
 import javafx.scene.layout.Pane;
 
 import java.net.URL;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ResourceBundle;
 
@@ -66,7 +68,8 @@ public class UserForm implements Initializable {
                     passwordField.getText(),
                     nameField.getText(),
                     surnameField.getText(),
-                    phoneNumberField.getText());
+                    phoneNumberField.getText(),
+                    LocalDateTime.now());
             genericHibernate.create(user);
         } else if(restaurantRadio.isSelected()){
             Restaurant restaurant = new Restaurant(loginField.getText(),
@@ -74,6 +77,7 @@ public class UserForm implements Initializable {
                     nameField.getText(),
                     surnameField.getText(),
                     resPhone.getText(),
+                    LocalDateTime.now(),
                     resAddress.getText(),
                     resName.getText(),
                     resDesc.getText(),
@@ -97,6 +101,7 @@ public class UserForm implements Initializable {
                     nameField.getText(),
                     surnameField.getText(),
                     phoneNumberField.getText(),
+                    LocalDateTime.now(),
                     driverAddress.getText(),
                     driverLicense.getText(),
                     driverBirthDate.getValue(),

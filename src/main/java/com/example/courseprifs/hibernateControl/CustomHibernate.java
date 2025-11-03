@@ -1,11 +1,13 @@
 package com.example.courseprifs.hibernateControl;
 
+import com.example.courseprifs.fxControllers.FxUtils;
 import com.example.courseprifs.model.*;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Query;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
 import jakarta.persistence.criteria.Root;
+import javafx.scene.control.Alert;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -30,7 +32,7 @@ public class CustomHibernate extends GenericHibernate {
             Query q = entityManager.createQuery(query);
             user = (User) q.getSingleResult();
         } catch (Exception e) {
-
+            FxUtils.generateDialogAlert(Alert.AlertType.ERROR, "Something went wrong when getting information", e);
         }
         return user;
     }
@@ -47,7 +49,7 @@ public class CustomHibernate extends GenericHibernate {
             Query q = entityManager.createQuery(query);
             orders = q.getResultList();
         } catch (Exception e) {
-
+            FxUtils.generateDialogAlert(Alert.AlertType.ERROR, "Something went wrong when getting information", e);
         }
         return orders;
     }
@@ -64,7 +66,7 @@ public class CustomHibernate extends GenericHibernate {
             Query q = entityManager.createQuery(query);
             menu = q.getResultList();
         } catch (Exception e) {
-
+            FxUtils.generateDialogAlert(Alert.AlertType.ERROR, "Something went wrong when getting information", e);
         }
         return menu;
     }
@@ -86,7 +88,7 @@ public class CustomHibernate extends GenericHibernate {
             Query q = entityManager.createQuery(query);
             orders = q.getResultList();
         } catch (Exception e) {
-
+            FxUtils.generateDialogAlert(Alert.AlertType.ERROR, "Something went wrong when getting orders", e);
         }
         return orders;
     }

@@ -13,6 +13,7 @@ module com.example.courseprifs {
     requires org.kordamp.bootstrapfx.core;
     requires javafx.graphics;
     requires javafx.base;
+    //requires com.example.courseprifs;
 
     opens com.example.courseprifs to javafx.fxml;
     exports com.example.courseprifs;

@@ -9,6 +9,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -24,6 +25,14 @@ public class Driver extends BasicUser{
 
     public Driver(String login, String password, String name, String surname, String phoneNumber, String address, String licence, LocalDate bDate, VehicleType vehicleType, String vehicleInfo) {
         super(login, password, name, surname, phoneNumber, address);
+        this.licence = licence;
+        this.bDate = bDate;
+        this.vehicleType = vehicleType;
+        this.vehicleInfo = vehicleInfo;
+    }
+
+    public Driver(String login, String password, String name, String surname, String phoneNumber, LocalDateTime dateCreated, String address, String licence, LocalDate bDate, VehicleType vehicleType, String vehicleInfo) {
+        super(login, password, name, surname, phoneNumber, dateCreated, address);
         this.licence = licence;
         this.bDate = bDate;
         this.vehicleType = vehicleType;

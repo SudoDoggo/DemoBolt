@@ -1,8 +1,6 @@
 package com.example.courseprifs.hibernateControl;
 
 import com.example.courseprifs.fxControllers.FxUtils;
-import com.example.courseprifs.model.Cuisine;
-import com.example.courseprifs.model.User;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Query;
@@ -27,7 +25,7 @@ public class GenericHibernate {
             entityManager.persist(entity); //INSERT
             entityManager.getTransaction().commit();
         } catch (Exception e) {
-            //Noriu alerto
+            FxUtils.generateDialogAlert(Alert.AlertType.ERROR, "Something went wrong when creating", e);
         } finally {
             if (entityManager != null) entityManager.close();
         }
@@ -40,7 +38,7 @@ public class GenericHibernate {
             entityManager.merge(entity); //UPDATE
             entityManager.getTransaction().commit();
         } catch (Exception e) {
-            //Noriu alerto
+            FxUtils.generateDialogAlert(Alert.AlertType.ERROR, "Something went wrong when updating", e);
         } finally {
             if (entityManager != null) entityManager.close();
         }
@@ -54,7 +52,7 @@ public class GenericHibernate {
             entity = entityManager.find(entityClass, id);
             entityManager.getTransaction().commit();
         } catch (Exception e) {
-            //Noriu alerto
+            FxUtils.generateDialogAlert(Alert.AlertType.ERROR, "Failed to get information from data base", e);
         } finally {
             if (entityManager != null) entityManager.close();
         }
@@ -70,7 +68,7 @@ public class GenericHibernate {
             entityManager.remove(entity); //DELETE
             entityManager.getTransaction().commit();
         } catch (Exception e) {
-            FxUtils.generateDialogAlert(Alert.AlertType.ERROR, "During DELETE", e);
+            FxUtils.generateDialogAlert(Alert.AlertType.ERROR, "Something went wrong when deleting", e);
         } finally {
             if (entityManager != null) entityManager.close();
         }
@@ -86,7 +84,7 @@ public class GenericHibernate {
             Query q = entityManager.createQuery(query);
             list = q.getResultList();
         } catch (Exception e) {
-            //alerto reiks
+            FxUtils.generateDialogAlert(Alert.AlertType.ERROR, "Something went wrong when getting all records", e);
         }
         return list;
     }

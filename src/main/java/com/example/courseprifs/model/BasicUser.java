@@ -9,6 +9,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -32,5 +33,10 @@ public class BasicUser extends User{
         this.myReviews = new ArrayList<>();
         this.feedback = new ArrayList<>();
         this.myOrders = new ArrayList<>();
+    }
+
+    public BasicUser(String login, String password, String name, String surname, String phoneNumber, LocalDateTime dateCreated, String address) {
+        super(login, password, name, surname, phoneNumber, dateCreated);
+        this.address = address;
     }
 }

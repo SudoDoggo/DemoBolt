@@ -12,6 +12,32 @@ public class UserTableParameters {
     private SimpleStringProperty surname = new SimpleStringProperty();
     private SimpleStringProperty phoneNum = new SimpleStringProperty();
     private SimpleStringProperty address = new SimpleStringProperty();
+    private SimpleStringProperty dateCreated = new SimpleStringProperty();
+    private SimpleStringProperty dateUpdate = new SimpleStringProperty();
+
+    public String getDateCreated() {
+        return dateCreated.get();
+    }
+
+    public SimpleStringProperty dateCreatedProperty() {
+        return dateCreated;
+    }
+
+    public void setDateCreated(String dateCreated) {
+        this.dateCreated.set(dateCreated);
+    }
+
+    public String getDateUpdate() {
+        return dateUpdate.get();
+    }
+
+    public SimpleStringProperty dateUpdateProperty() {
+        return dateUpdate;
+    }
+
+    public void setDateUpdate(String dateUpdate) {
+        this.dateUpdate.set(dateUpdate);
+    }
 
     public int getId() {
         return id.get();

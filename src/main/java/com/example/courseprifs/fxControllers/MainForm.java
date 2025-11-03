@@ -7,7 +7,6 @@ import jakarta.persistence.EntityManagerFactory;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
-import javafx.event.Event;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.fxml.Initializable;
@@ -16,21 +15,19 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.control.cell.TextFieldTableCell;
-import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.AnchorPane;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 import java.io.IOException;
 import java.net.URL;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.ResourceBundle;
 
 public class MainForm implements Initializable {
     @FXML
     public Tab userTab;
-    @FXML
-    public Tab managementTab;
+    @FXML    public Tab managementTab;
     @FXML
     public Tab foodTab;
     @FXML
@@ -57,7 +54,11 @@ public class MainForm implements Initializable {
     @FXML
     public TableColumn<UserTableParameters, String> addrCol;
     @FXML
-    public TableColumn<UserTableParameters, Void> dummyCol;
+    public TableColumn<UserTableParameters, String>  phoneNrCol;
+    @FXML
+    public TableColumn<UserTableParameters, String>  dateCreatedCol;
+    @FXML
+    public TableColumn<UserTableParameters, String>  dateUpdateCol;
 
     private ObservableList<UserTableParameters> data = FXCollections.observableArrayList();
 
@@ -67,9 +68,8 @@ public class MainForm implements Initializable {
     public TextField titleField;
     public ComboBox<BasicUser> clientList;
     public TextField priceField;
-    public ComboBox<Restaurant> restaurantField;
-    public ListView<BasicUser> basicUserList;
-    public ComboBox<OrderStatus> orderStatusField;
+    public ComboBox<Restaurant> restaurantCombBox;
+    public ComboBox<OrderStatus> orderStatusComboBox;
     public ComboBox<OrderStatus> filterStatus;
     public ComboBox<BasicUser> filterClients;
     public DatePicker filterFrom;
@@ -134,6 +134,23 @@ public class MainForm implements Initializable {
             user.setAddress(event.getNewValue());
             customHibernate.update(user);
         });
+        phoneNrCol.setCellValueFactory(new PropertyValueFactory<>("phoneNumber"));
+        phoneNrCol.setCellFactory(TextFieldTableCell.forTableColumn());
+        phoneNrCol.setOnEditCommit(event -> {
+            event.getTableView().getItems().get(event.getTablePosition().getRow()).setPhoneNum(event.getNewValue());
+            BasicUser user = customHibernate.getEntityById(BasicUser.class, event.getTableView().getItems().get(event.getTablePosition().getRow()).getId());
+            user.setPhoneNumber(event.getNewValue());
+            customHibernate.update(user);
+        });
+        /*dateCreatedCol.setCellValueFactory(new PropertyValueFactory<>("dateCreated"));
+        dateUpdateCol.setCellValueFactory(new PropertyValueFactory<>("dateUpdated"));
+        dateUpdateCol.setCellFactory(TextFieldTableCell.forTableColumn());
+        dateUpdateCol.setOnEditCommit(event -> {
+            event.getTableView().getItems().get(event.getTablePosition().getRow()).setDateUpdate(event.getNewValue());
+            BasicUser user = customHibernate.getEntityById(BasicUser.class, event.getTableView().getItems().get(event.getTablePosition().getRow()).getId());
+            user.setDateUpdated(LocalDateTime.parse(event.getNewValue()));
+            customHibernate.update(user);
+        });*/
     }
 
     public void setData(EntityManagerFactory entityManagerFactory, User user) {
@@ -145,16 +162,27 @@ public class MainForm implements Initializable {
     }
 
     private void setUserFormVisibility() {
-        if (currentUser instanceof Restaurant) {
-            tabsPane.getTabs().remove(altTab);
-            tabsPane.getTabs().remove(userTab);
-        }else if (currentUser instanceof BasicUser) {
-            tabsPane.getTabs().remove(altTab);
-            tabsPane.getTabs().remove(userTab);
-            tabsPane.getTabs().remove(foodTab);
-            tabsPane.getTabs().remove(managementTab);
+        if (!currentUser.isAdmin()) {
+            if (currentUser instanceof Restaurant) {
+                tabsPane.getTabs().remove(altTab);
+                tabsPane.getTabs().remove(userTab);
+            } else if (currentUser instanceof BasicUser) {
+                tabsPane.getTabs().remove(altTab);
+                tabsPane.getTabs().remove(userTab);
+                tabsPane.getTabs().remove(foodTab);
+                tabsPane.getTabs().remove(managementTab);
+            }else if (currentUser instanceof Driver){
+                tabsPane.getTabs().remove(altTab);
+                tabsPane.getTabs().remove(userTab);
+                tabsPane.getTabs().remove(foodTab);
+                tabsPane.getTabs().remove(managementTab);
+            }else if (currentUser instanceof  User){
+                tabsPane.getTabs().remove(altTab);
+                tabsPane.getTabs().remove(userTab);
+                tabsPane.getTabs().remove(foodTab);
+                tabsPane.getTabs().remove(managementTab);
+            }
         }
-
     }
 
     //<editor-fold desc="User Tab functionality">
@@ -171,6 +199,9 @@ public class MainForm implements Initializable {
                 userTableParameters.setPassword(u.getPassword());
                 userTableParameters.setName(u.getName());
                 userTableParameters.setSurname(u.getSurname());
+                userTableParameters.setPhoneNum(u.getPhoneNumber());
+                //userTableParameters.setDateCreated(u.getDateCreated().toString());
+                //userTableParameters.setDateUpdate(u.getDateUpdated().toString());
                 if (u instanceof BasicUser) {
                     userTableParameters.setAddress(((BasicUser) u).getAddress());
                 }
@@ -187,11 +218,14 @@ public class MainForm implements Initializable {
             clearAllOrderFields();
             List<FoodOrder> foodOrders = getFoodOrders();
             ordersList.getItems().addAll(foodOrders);
-            clientList.getItems().addAll(customHibernate.getAllRecords(BasicUser.class));
-            basicUserList.getItems().addAll(customHibernate.getAllRecords(BasicUser.class));
-            restaurantField.getItems().addAll(customHibernate.getAllRecords(Restaurant.class));
-            orderStatusField.getItems().addAll(OrderStatus.values());
+            List<BasicUser> allbasicUser = customHibernate.getAllRecords(BasicUser.class).stream()
+                    .filter(u -> u.getClass() == BasicUser.class)
+                    .toList();
+            clientList.getItems().addAll(allbasicUser);
+            restaurantCombBox.getItems().addAll(customHibernate.getAllRecords(Restaurant.class));
+            orderStatusComboBox.getItems().addAll(OrderStatus.values());
         } else if (altTab.isSelected()) {
+            userListField.getItems().clear();
             List<User> userList = customHibernate.getAllRecords(User.class);
             userListField.getItems().addAll(userList);
         } else if (foodTab.isSelected()) {
@@ -205,9 +239,8 @@ public class MainForm implements Initializable {
     private void clearAllOrderFields() {
         //turbut reik salygos sakiniu
         ordersList.getItems().clear();
-        basicUserList.getItems().clear();
         clientList.getItems().clear();
-        restaurantField.getItems().clear();
+        restaurantCombBox.getItems().clear();
         titleField.clear();
         priceField.clear();
     }
@@ -285,7 +318,7 @@ public class MainForm implements Initializable {
     public void createOrder() {
         if (isNumeric(priceField.getText())) {
 //            FoodOrder foodOrder = new FoodOrder(titleField.getText(), Double.parseDouble(priceField.getText()), clientList.getValue(), restaurantField.getValue());
-            FoodOrder foodOrder = new FoodOrder(titleField.getText(), Double.parseDouble(priceField.getText()), clientList.getValue(), foodList.getSelectionModel().getSelectedItems(), restaurantField.getValue());
+            FoodOrder foodOrder = new FoodOrder(titleField.getText(), Double.parseDouble(priceField.getText()), clientList.getValue(), foodList.getSelectionModel().getSelectedItems(), restaurantCombBox.getValue());
             customHibernate.create(foodOrder);
 
             //Alternatyvus būdas:
@@ -297,14 +330,12 @@ public class MainForm implements Initializable {
 
     public void updateOrder() {
         FoodOrder foodOrder = ordersList.getSelectionModel().getSelectedItem();
-        foodOrder.setRestaurant(restaurantField.getSelectionModel().getSelectedItem());
+        foodOrder.setRestaurant(restaurantCombBox.getSelectionModel().getSelectedItem());
         foodOrder.setName(titleField.getText());
         foodOrder.setPrice(Double.valueOf(priceField.getText()));
-        foodOrder.setOrderStatus(orderStatusField.getValue());
+        foodOrder.setOrderStatus(orderStatusComboBox.getValue());
         foodOrder.setBuyer(clientList.getSelectionModel().getSelectedItem());
-
         customHibernate.update(foodOrder);
-        //SItas naudojamas bus daug kur
         fillOrderLists();
     }
 
@@ -320,39 +351,42 @@ public class MainForm implements Initializable {
     }
 
     public void loadOrderInfo() {
-        //not optimal, code duplication
+        //Not optimal, code duplication
         FoodOrder selectedOrder = ordersList.getSelectionModel().getSelectedItem();
         clientList.getItems().stream()
                 .filter(c -> c.getId() == selectedOrder.getBuyer().getId())
                 .findFirst()
                 .ifPresent(u -> clientList.getSelectionModel().select(u));
 
-        basicUserList.getItems().stream()
-                .filter(c -> c.getId() == selectedOrder.getBuyer().getId())
-                .findFirst()
-                .ifPresent(u -> basicUserList.getSelectionModel().select(u));
         titleField.setText(selectedOrder.getName());
-        priceField.setText(selectedOrder.getPrice().toString());
-        restaurantField.getItems().stream()
-                .filter(r -> r.getId() == selectedOrder.getRestaurant().getId())
+        priceField.setText(String.valueOf(selectedOrder.getPrice()));
+        restaurantCombBox.getItems().stream()
+                .filter(r ->  r.getId() == selectedOrder.getRestaurant().getId())
                 .findFirst()
-                .ifPresent(u -> restaurantField.getSelectionModel().select(u));
-        orderStatusField.getItems().stream()
+                .ifPresent(u -> restaurantCombBox.getSelectionModel().select(u));
+        orderStatusComboBox.getItems().stream()
                 .filter(o -> o == selectedOrder.getOrderStatus())
                 .findFirst()
-                .ifPresent(u -> orderStatusField.getSelectionModel().select(u));
+                .ifPresent(o -> orderStatusComboBox.getSelectionModel().select(o));
         disableFoodOrderFields();
-
     }
 
     private void disableFoodOrderFields() {
-        if (orderStatusField.getSelectionModel().getSelectedItem() == OrderStatus.COMPLETED) {
+        if (orderStatusComboBox.getSelectionModel().getSelectedItem() == OrderStatus.COMPLETED) {
             clientList.setDisable(true);
             priceField.setDisable(true);
+            restaurantCombBox.setDisable(true);
+            orderStatusComboBox.setDisable(true);
+            restaurantCombBox.setDisable(true);
+            titleField.setDisable(true);
         }
         else{
             clientList.setDisable(false);
             priceField.setDisable(false);
+            restaurantCombBox.setDisable(false);
+            orderStatusComboBox.setDisable(false);
+            restaurantCombBox.setDisable(false);
+            titleField.setDisable(false);
         }
     }
 
@@ -361,7 +395,7 @@ public class MainForm implements Initializable {
 
     public void loadRestaurantMenuForOrder() {
         foodList.getItems().clear();
-        foodList.getItems().addAll(customHibernate.getRestaurantCuisine(restaurantField.getSelectionModel().getSelectedItem()));
+        foodList.getItems().addAll(customHibernate.getRestaurantCuisine(restaurantCombBox.getSelectionModel().getSelectedItem()));
     }
     //</editor-fold>
 
@@ -375,6 +409,7 @@ public class MainForm implements Initializable {
     }
 
     public void loadRestaurantMenu() {
+        cuisineList.getItems().clear();
         cuisineList.getItems().addAll(customHibernate.getRestaurantCuisine(restaurantList.getSelectionModel().getSelectedItem()));
     }
     //</editor-fold>
