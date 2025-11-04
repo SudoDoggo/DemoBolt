@@ -92,6 +92,35 @@ public class CustomHibernate extends GenericHibernate {
         return orders;
     }
 
-
-
+    public List<Review> getReviewsByChatId(int chatId) {
+        List<Review> reviews = new ArrayList<>();
+        try {
+            entityManager = entityManagerFactory.createEntityManager();
+            CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+            CriteriaQuery<Review> cq = cb.createQuery(Review.class);
+            Root<Review> root = cq.from(Review.class);
+            cq.select(root).where(cb.equal(root.get("chat").get("id"), chatId));
+            reviews = entityManager.createQuery(cq).getResultList();
+        } catch (Exception e) {
+            FxUtils.generateDialogAlert(Alert.AlertType.ERROR, "Something went wrong when getting information", e);
+        }
+        return reviews;
+    }
+    public FoodOrder getFoodOrderByChatId(int chatId) {
+        FoodOrder order = null;
+        try {
+            entityManager = entityManagerFactory.createEntityManager();
+            CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+            CriteriaQuery<FoodOrder> query = cb.createQuery(FoodOrder.class);
+            Root<FoodOrder> root = query.from(FoodOrder.class);
+            query.select(root).where(cb.equal(root.get("chat").get("id"), chatId));
+            order = entityManager.createQuery(query).getSingleResult();
+        } catch (Exception e) {
+            FxUtils.generateDialogAlert(Alert.AlertType.ERROR,
+                    "Something went wrong when getting information", e);
+        } finally {
+            if (entityManager != null) entityManager.close();
+        }
+        return order;
+    }
 }

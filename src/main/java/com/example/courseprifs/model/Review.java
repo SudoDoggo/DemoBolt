@@ -21,7 +21,7 @@ public class Review {
     private String reviewText;
     private LocalDate dateCreated;
     @ManyToOne
-    private BasicUser commentOwner;
+    private User commentOwner;
     @ManyToOne
     private BasicUser feedbackUser;
     @ManyToOne
@@ -33,7 +33,7 @@ public class Review {
         this.chat = chat;
     }
 
-    public Review(String reviewText, LocalDate dateCreated, BasicUser commentOwner, BasicUser feedbackUser, Chat chat) {
+    public Review(String reviewText, LocalDate dateCreated, User commentOwner, BasicUser feedbackUser, Chat chat) {
         this.reviewText = reviewText;
         this.dateCreated = dateCreated;
         this.commentOwner = commentOwner;

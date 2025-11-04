@@ -42,11 +42,16 @@ public class ChatForm implements Initializable {
                     break;
                 }
             }
+            FoodOrder foodOrder = customHibernate.getEntityById(FoodOrder.class, currentFoodOrder.getId());
+            Review message = new Review(messageBody.getText(), LocalDate.now(), currentUser, foodOrder.getBuyer(), foodOrder.getChat());
+            customHibernate.create(message);
+        }else
+        {
+            FoodOrder foodOrder = customHibernate.getEntityById(FoodOrder.class, currentFoodOrder.getId());
+            Review message = new Review(messageBody.getText(), LocalDate.now(),  currentUser, foodOrder.getBuyer(), foodOrder.getChat());
+            customHibernate.create(message);
         }
-        FoodOrder foodOrder = customHibernate.getEntityById(FoodOrder.class, currentFoodOrder.getId());
-        Review message = new Review(messageBody.getText(), LocalDate.now(), (BasicUser) currentUser, foodOrder.getBuyer(), foodOrder.getChat());
-        customHibernate.create(message);
-
+        messageBody.clear();
         loadMessages();
     }
 
@@ -57,11 +62,11 @@ public class ChatForm implements Initializable {
 
     private void loadMessages() {
         messageList.getItems().clear();
-        List<Review> allReviews = customHibernate.getEntityById(Review.class, currentFoodOrder.getChat().getId());
-        if (allReviews == null) {
+        if (currentFoodOrder.getChat()==null) {
             return;
         } else {
-                messageList.getItems().add(allReviews);
+            List<Review> allReviews = customHibernate.getReviewsByChatId(currentFoodOrder.getChat().getId());
+            messageList.getItems().addAll(allReviews);
         }
     }
 

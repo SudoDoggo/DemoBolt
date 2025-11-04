@@ -33,9 +33,6 @@
                                         <TableColumn fx:id="nameCol" prefWidth="75.0" text="Name" />
                                         <TableColumn fx:id="surnameCol" prefWidth="75.0" text="Surname" />
                                         <TableColumn fx:id="addrCol" prefWidth="108.79998779296875" text="Address" />
-                                        <TableColumn fx:id="phoneNrCol" prefWidth="108.7999267578125" text="Phone number" />
-                                        <TableColumn fx:id="dateCreatedCol" prefWidth="81.59991455078125" text="Date created" />
-                                        <TableColumn fx:id="dateUpdateCol" prefWidth="97.5999755859375" text="Date updated" />
                                     </columns>
                            <contextMenu>
                               <ContextMenu>
@@ -97,11 +94,12 @@
                                 <TextArea fx:id="ingredientsField" layoutX="236.0" layoutY="74.0" prefHeight="150.0" prefWidth="200.0" promptText="Ingredients" />
                                 <ListView fx:id="restaurantList" layoutX="236.0" layoutY="243.0" onMouseClicked="#loadRestaurantMenu" prefHeight="82.0" prefWidth="200.0" />
                                 <Button layoutX="236.0" layoutY="332.0" mnemonicParsing="false" onAction="#createNewMenuItem" text="New" />
-                                <Button layoutX="365.0" layoutY="332.0" mnemonicParsing="false" onAction="#updateMenuItem" text="Update" />
+                                <Button layoutX="365.0" layoutY="332.0" mnemonicParsing="false" onAction="#deleteMenuItem" text="Delete" />
                                 <TextField fx:id="cuisinePriceField" layoutX="445.0" layoutY="33.0" promptText="Price" />
                                 <CheckBox fx:id="isDeadly" layoutX="445.0" layoutY="74.0" mnemonicParsing="false" text="Spicy" />
                                 <CheckBox fx:id="isVegan" layoutX="445.0" layoutY="107.0" mnemonicParsing="false" text="Vegan" />
                         <Label layoutX="236.0" layoutY="224.0" text="Restaurants:" />
+                        <Button layoutX="293.0" layoutY="332.0" mnemonicParsing="false" onAction="#updateMenuItem" text="Update" />
                             </children></AnchorPane>
                     </content>
                 </Tab>
@@ -121,7 +119,7 @@
                     <content>
                         <AnchorPane minHeight="0.0" minWidth="0.0" prefHeight="180.0" prefWidth="200.0">
                             <children>
-                                <ListView fx:id="allChats" layoutX="14.0" layoutY="21.0" onMouseClicked="#loadChatMessages" prefHeight="409.0" prefWidth="207.0">
+                                <ListView fx:id="allChats" layoutY="14.0" onMouseClicked="#loadChatMessages" prefHeight="409.0" prefWidth="207.0">
                                     <contextMenu>
                                         <ContextMenu>
                                             <items>
@@ -130,7 +128,7 @@
                                         </ContextMenu>
                                     </contextMenu>
                                 </ListView>
-                                <ListView fx:id="chatMessages" layoutX="238.0" layoutY="22.0" prefHeight="407.0" prefWidth="185.0">
+                                <ListView fx:id="chatMessages" layoutX="238.0" layoutY="14.0" onMouseClicked="#loadMessageInText" prefHeight="407.0" prefWidth="185.0">
                                     <contextMenu>
                                         <ContextMenu>
                                             <items>
@@ -139,7 +137,9 @@
                                         </ContextMenu>
                                     </contextMenu>
                                 </ListView>
-                                <Button layoutX="587.0" layoutY="395.0" mnemonicParsing="false" text="Update dat" />
+                                <Button layoutX="754.0" layoutY="232.0" mnemonicParsing="false" onAction="#updateMessage" text="Update message" />
+                        <TextArea fx:id="messageText" layoutX="463.0" layoutY="22.0" prefHeight="185.0" prefWidth="406.0" />
+                        <Button layoutX="463.0" layoutY="232.0" mnemonicParsing="false" onAction="#createMessage" text="Create message" />
                             </children>
                         </AnchorPane>
                     </content>

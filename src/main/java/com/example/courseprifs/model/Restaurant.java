@@ -1,9 +1,6 @@
 package com.example.courseprifs.model;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.OneToMany;
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -22,7 +19,7 @@ public class Restaurant extends BasicUser {
     private String restaurantName;
     private String description;
     private String email;
-
+    @Enumerated(EnumType.STRING)
     private CuisineType cuisineType;
     private LocalTime openingHour;
     private LocalTime closingHour;

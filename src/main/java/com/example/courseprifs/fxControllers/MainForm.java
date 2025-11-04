@@ -61,6 +61,7 @@ public class MainForm implements Initializable {
     public TableColumn<UserTableParameters, String> dateCreatedCol;
     @FXML
     public TableColumn<UserTableParameters, String> dateUpdateCol;
+    public TextArea messageText;
 
     private ObservableList<UserTableParameters> data = FXCollections.observableArrayList();
 
@@ -92,7 +93,6 @@ public class MainForm implements Initializable {
     public ListView<Chat> allChats;
     public ListView<Review> chatMessages;
     //</editor-fold>
-
 
     private EntityManagerFactory entityManagerFactory;
     private CustomHibernate customHibernate;
@@ -136,7 +136,7 @@ public class MainForm implements Initializable {
             user.setAddress(event.getNewValue());
             customHibernate.update(user);
         });
-        phoneNrCol.setCellValueFactory(new PropertyValueFactory<>("phoneNumber"));
+        /*phoneNrCol.setCellValueFactory(new PropertyValueFactory<>("phoneNumber"));
         phoneNrCol.setCellFactory(TextFieldTableCell.forTableColumn());
         phoneNrCol.setOnEditCommit(event -> {
             event.getTableView().getItems().get(event.getTablePosition().getRow()).setPhoneNum(event.getNewValue());
@@ -144,7 +144,7 @@ public class MainForm implements Initializable {
             user.setPhoneNumber(event.getNewValue());
             customHibernate.update(user);
         });
-        /*dateCreatedCol.setCellValueFactory(new PropertyValueFactory<>("dateCreated"));
+        dateCreatedCol.setCellValueFactory(new PropertyValueFactory<>("dateCreated"));
         dateUpdateCol.setCellValueFactory(new PropertyValueFactory<>("dateUpdated"));
         dateUpdateCol.setCellFactory(TextFieldTableCell.forTableColumn());
         dateUpdateCol.setOnEditCommit(event -> {
@@ -205,7 +205,7 @@ public class MainForm implements Initializable {
                 userTableParameters.setPassword(u.getPassword());
                 userTableParameters.setName(u.getName());
                 userTableParameters.setSurname(u.getSurname());
-                userTableParameters.setPhoneNum(u.getPhoneNumber());
+                //userTableParameters.setPhoneNum(u.getPhoneNumber());
                 //userTableParameters.setDateCreated(u.getDateCreated().toString());
                 //userTableParameters.setDateUpdate(u.getDateUpdated().toString());
                 if (u instanceof BasicUser) {
@@ -248,6 +248,7 @@ public class MainForm implements Initializable {
                 restaurantList.getItems().addAll(customHibernate.getAllRecords(Restaurant.class));
             }
         } else if (chatTab.isSelected()) {
+            allChats.getItems().clear();
             allChats.getItems().addAll(customHibernate.getAllRecords(Chat.class));
         }
     }
@@ -420,11 +421,23 @@ public class MainForm implements Initializable {
     public void createNewMenuItem() {
         Cuisine cuisine = new Cuisine(titleCuisineField.getText(), ingredientsField.getText(), Double.parseDouble(cuisinePriceField.getText()), isDeadly.isSelected(), isVegan.isSelected(), restaurantList.getSelectionModel().getSelectedItem());
         customHibernate.create(cuisine);
+        loadRestaurantMenu();
     }
-
     public void updateMenuItem(ActionEvent actionEvent) {
+        Cuisine cuisine = cuisineList.getSelectionModel().getSelectedItem();
+        cuisine.setName(titleCuisineField.getText());
+        cuisine.setIngredients(ingredientsField.getText());
+        cuisine.setRestaurant(restaurantList.getSelectionModel().getSelectedItem());
+        cuisine.setPrice(Double.valueOf(priceField.getText()));
+        cuisine.setVegan(isVegan.isSelected());
+        cuisine.setSpicy(isDeadly.isSelected());
+        customHibernate.update(cuisine);
+        loadRestaurantMenu();
     }
-
+    public void deleteMenuItem(ActionEvent actionEvent) {
+        customHibernate.delete(Cuisine.class, cuisineList.getSelectionModel().getSelectedItem().getId());
+        loadRestaurantMenu();
+    }
     public void loadRestaurantMenu() {
         cuisineList.getItems().clear();
         cuisineList.getItems().addAll(customHibernate.getRestaurantCuisine(restaurantList.getSelectionModel().getSelectedItem()));
@@ -432,22 +445,49 @@ public class MainForm implements Initializable {
     //</editor-fold>
 
     //<editor-fold desc="Admin Chat Functionality">
+    //<editor-fold desc="ChatControl">
     public void loadChatMessages() {
-//        chatMessages.getItems().addAll(customHibernate.getChatMessages(allChats.getSelectionModel().getSelectedItem()));
+        chatMessages.getItems().clear();
+        chatMessages.getItems().addAll(customHibernate.getReviewsByChatId(allChats.getSelectionModel().getSelectedItem().getId()));
     }
-
     public void deleteChat() {
+        FoodOrder foodOrder = customHibernate.getFoodOrderByChatId(allChats.getSelectionModel().getSelectedItem().getId());
+        foodOrder.setChat(null);
+        customHibernate.update(foodOrder);
+        customHibernate.delete(Chat.class, allChats.getSelectionModel().getSelectedItem().getId());
+        allChats.getItems().clear();
+        allChats.getItems().addAll(customHibernate.getAllRecords(Chat.class));
     }
-
+    //</editor-fold>
+    //<editor-fold desc="MessageControl">
+    public void loadMessageInText() {
+        messageText.clear();
+        messageText.setText(chatMessages.getSelectionModel().getSelectedItem().getReviewText());
+    }
     public void deleteMessage() {
+        customHibernate.delete(Review.class, chatMessages.getSelectionModel().getSelectedItem().getId());
+        loadChatMessages();
     }
-
+    public void updateMessage() {
+        chatMessages.getSelectionModel().getSelectedItem().setReviewText(messageText.getText());
+        customHibernate.update(chatMessages.getSelectionModel().getSelectedItem());
+        loadChatMessages();
+    }
+    public void createMessage(ActionEvent actionEvent) {
+        Review message = new Review(messageText.getText(), LocalDate.now(), currentUser,
+                (customHibernate.getFoodOrderByChatId(allChats.getSelectionModel().getSelectedItem().getId())).getBuyer(),
+                allChats.getSelectionModel().getSelectedItem());
+        customHibernate.create(message);
+        loadChatMessages();
+    }
+    //</editor-fold>
+    //</editor-fold>
     public void loadChatForm(ActionEvent actionEvent) throws IOException {
         FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("chat-form.fxml"));
         Parent parent = fxmlLoader.load();
 
         ChatForm chatForm = fxmlLoader.getController();
-        chatForm.setData(entityManagerFactory, currentUser,ordersList.getSelectionModel().getSelectedItem());
+        chatForm.setData(entityManagerFactory, currentUser, ordersList.getSelectionModel().getSelectedItem());
 
         Stage stage = new Stage();
         Scene scene = new Scene(parent);
@@ -455,6 +495,4 @@ public class MainForm implements Initializable {
         stage.initModality(Modality.APPLICATION_MODAL);
         stage.showAndWait();
     }
-    //</editor-fold>
-
 }
