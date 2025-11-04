@@ -28,7 +28,8 @@ import java.util.ResourceBundle;
 public class MainForm implements Initializable {
     @FXML
     public Tab userTab;
-    @FXML    public Tab managementTab;
+    @FXML
+    public Tab managementTab;
     @FXML
     public Tab foodTab;
     @FXML
@@ -55,11 +56,11 @@ public class MainForm implements Initializable {
     @FXML
     public TableColumn<UserTableParameters, String> addrCol;
     @FXML
-    public TableColumn<UserTableParameters, String>  phoneNrCol;
+    public TableColumn<UserTableParameters, String> phoneNrCol;
     @FXML
-    public TableColumn<UserTableParameters, String>  dateCreatedCol;
+    public TableColumn<UserTableParameters, String> dateCreatedCol;
     @FXML
-    public TableColumn<UserTableParameters, String>  dateUpdateCol;
+    public TableColumn<UserTableParameters, String> dateUpdateCol;
 
     private ObservableList<UserTableParameters> data = FXCollections.observableArrayList();
 
@@ -167,21 +168,25 @@ public class MainForm implements Initializable {
             if (currentUser instanceof Restaurant) {
                 tabsPane.getTabs().remove(altTab);
                 tabsPane.getTabs().remove(userTab);
+                tabsPane.getTabs().remove(chatTab);
             } else if (currentUser instanceof BasicUser) {
                 tabsPane.getTabs().remove(altTab);
                 tabsPane.getTabs().remove(userTab);
                 tabsPane.getTabs().remove(foodTab);
                 tabsPane.getTabs().remove(managementTab);
-            }else if (currentUser instanceof Driver){
+                tabsPane.getTabs().remove(chatTab);
+            } else if (currentUser instanceof Driver) {
                 tabsPane.getTabs().remove(altTab);
                 tabsPane.getTabs().remove(userTab);
                 tabsPane.getTabs().remove(foodTab);
                 tabsPane.getTabs().remove(managementTab);
-            }else if (currentUser instanceof  User){
+                tabsPane.getTabs().remove(chatTab);
+            } else if (currentUser instanceof User) {
                 tabsPane.getTabs().remove(altTab);
                 tabsPane.getTabs().remove(userTab);
                 tabsPane.getTabs().remove(foodTab);
                 tabsPane.getTabs().remove(managementTab);
+
             }
         }
     }
@@ -226,9 +231,9 @@ public class MainForm implements Initializable {
             filterClients.getItems().addAll(allbasicUser);
             orderStatusComboBox.getItems().addAll(OrderStatus.values());
             filterStatus.getItems().addAll(OrderStatus.values());
-            if(currentUser instanceof Restaurant){
+            if (currentUser instanceof Restaurant) {
                 restaurantCombBox.getItems().addAll((Restaurant) customHibernate.getUserByCredentials(currentUser.getLogin(), currentUser.getPassword()));
-            }else if(currentUser.isAdmin()){
+            } else if (currentUser.isAdmin()) {
                 restaurantCombBox.getItems().addAll(customHibernate.getAllRecords(Restaurant.class));
             }
         } else if (altTab.isSelected()) {
@@ -237,9 +242,9 @@ public class MainForm implements Initializable {
             userListField.getItems().addAll(userList);
         } else if (foodTab.isSelected()) {
             clearAllCuisineFields();
-            if(currentUser instanceof Restaurant){
+            if (currentUser instanceof Restaurant) {
                 restaurantList.getItems().addAll((Restaurant) customHibernate.getUserByCredentials(currentUser.getLogin(), currentUser.getPassword()));
-            }else if(currentUser.isAdmin()){
+            } else if (currentUser.isAdmin()) {
                 restaurantList.getItems().addAll(customHibernate.getAllRecords(Restaurant.class));
             }
         } else if (chatTab.isSelected()) {
@@ -311,7 +316,7 @@ public class MainForm implements Initializable {
     private List<FoodOrder> getFoodOrders() {
         if (currentUser instanceof Restaurant) {
             return customHibernate.getRestaurantOrders((Restaurant) currentUser);
-        } else if(currentUser.isAdmin()){
+        } else if (currentUser.isAdmin()) {
             return customHibernate.getAllRecords(FoodOrder.class);
         }
         return null;
@@ -328,7 +333,7 @@ public class MainForm implements Initializable {
 
     public void createOrder() {
         if (isNumeric(priceField.getText())) {
-            FoodOrder foodOrder = new FoodOrder(titleField.getText(), Double.parseDouble(priceField.getText()), clientList.getValue(), foodList.getSelectionModel().getSelectedItems(), restaurantCombBox.getValue(), LocalDate.now(),LocalDate.now());
+            FoodOrder foodOrder = new FoodOrder(titleField.getText(), Double.parseDouble(priceField.getText()), clientList.getValue(), foodList.getSelectionModel().getSelectedItems(), restaurantCombBox.getValue(), LocalDate.now(), LocalDate.now());
             customHibernate.create(foodOrder);
 
             //Alternatyvus būdas:
@@ -372,7 +377,7 @@ public class MainForm implements Initializable {
         titleField.setText(selectedOrder.getName());
         priceField.setText(String.valueOf(selectedOrder.getPrice()));
         restaurantCombBox.getItems().stream()
-                .filter(r ->  r.getId() == selectedOrder.getRestaurant().getId())
+                .filter(r -> r.getId() == selectedOrder.getRestaurant().getId())
                 .findFirst()
                 .ifPresent(u -> restaurantCombBox.getSelectionModel().select(u));
         orderStatusComboBox.getItems().stream()
@@ -390,8 +395,7 @@ public class MainForm implements Initializable {
             orderStatusComboBox.setDisable(true);
             restaurantCombBox.setDisable(true);
             titleField.setDisable(true);
-        }
-        else{
+        } else {
             clientList.setDisable(false);
             priceField.setDisable(false);
             restaurantCombBox.setDisable(false);
@@ -438,8 +442,18 @@ public class MainForm implements Initializable {
     public void deleteMessage() {
     }
 
-    public void loadChatForm(ActionEvent actionEvent) {
+    public void loadChatForm(ActionEvent actionEvent) throws IOException {
+        FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("chat-form.fxml"));
+        Parent parent = fxmlLoader.load();
 
+        ChatForm chatForm = fxmlLoader.getController();
+        chatForm.setData(entityManagerFactory, currentUser,ordersList.getSelectionModel().getSelectedItem());
+
+        Stage stage = new Stage();
+        Scene scene = new Scene(parent);
+        stage.setScene(scene);
+        stage.initModality(Modality.APPLICATION_MODAL);
+        stage.showAndWait();
     }
     //</editor-fold>
 

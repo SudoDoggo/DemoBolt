@@ -32,4 +32,17 @@ public class Review {
         this.commentOwner = commentOwner;
         this.chat = chat;
     }
+
+    public Review(String reviewText, LocalDate dateCreated, BasicUser commentOwner, BasicUser feedbackUser, Chat chat) {
+        this.reviewText = reviewText;
+        this.dateCreated = dateCreated;
+        this.commentOwner = commentOwner;
+        this.feedbackUser = feedbackUser;
+        this.chat = chat;
+    }
+
+    @Override
+    public String toString() {
+        return reviewText;
+    }
 }

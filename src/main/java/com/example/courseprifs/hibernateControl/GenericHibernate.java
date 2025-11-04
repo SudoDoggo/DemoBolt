@@ -22,7 +22,7 @@ public class GenericHibernate {
         try {
             entityManager = entityManagerFactory.createEntityManager();
             entityManager.getTransaction().begin();
-            entityManager.persist(entity); //INSERT
+            entityManager.persist(entity);
             entityManager.getTransaction().commit();
         } catch (Exception e) {
             FxUtils.generateDialogAlert(Alert.AlertType.ERROR, "Something went wrong when creating", e);
