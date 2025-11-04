@@ -79,7 +79,6 @@ public class CustomHibernate extends GenericHibernate {
             CriteriaQuery<FoodOrder> query = cb.createQuery(FoodOrder.class);
             Root<FoodOrder> root = query.from(FoodOrder.class);
 
-            //Cia aiskinsiu Predicates
             if(restaurant != null) {
                 query.select(root).where(cb.equal(root.get("restaurant"), restaurant));
             }else{

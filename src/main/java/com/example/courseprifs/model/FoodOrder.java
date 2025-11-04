@@ -46,7 +46,18 @@ public class FoodOrder {
         this.buyer = buyer;
         this.cuisineList = cuisineList;
         this.restaurant = restaurant;
+
+    }
+
+    public FoodOrder(String name, Double price, BasicUser buyer, List<Cuisine> cuisineList, Restaurant restaurant, LocalDate dateCreated, LocalDate dateUpdated) {
+        this.name = name;
+        this.price = price;
+        this.buyer = buyer;
+        this.cuisineList = cuisineList;
+        this.restaurant = restaurant;
         this.orderStatus = OrderStatus.PENDING;
+        this.dateCreated = dateCreated;
+        this.dateUpdated = dateUpdated;
     }
 
     @Override

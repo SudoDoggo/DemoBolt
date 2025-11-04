@@ -70,12 +70,13 @@
                                 <TextField fx:id="priceField" layoutX="238.0" layoutY="141.0" prefHeight="26.0" prefWidth="159.0" promptText="Price" />
                                 <ComboBox fx:id="restaurantCombBox" layoutX="238.0" layoutY="184.0" onAction="#loadRestaurantMenuForOrder" prefHeight="26.0" prefWidth="159.0" promptText="Restaurant menu" />
                                 <ComboBox fx:id="orderStatusComboBox" layoutX="238.0" layoutY="227.0" prefHeight="26.0" prefWidth="159.0" promptText="Order status" />
-                                <ComboBox fx:id="filterStatus" layoutX="14.0" layoutY="21.0" onAction="#filterOrders" prefWidth="150.0" />
-                                <ComboBox fx:id="filterClients" layoutX="173.0" layoutY="21.0" onAction="#filterOrders" prefWidth="150.0" />
-                                <DatePicker fx:id="filterFrom" layoutX="330.0" layoutY="21.0" onAction="#filterOrders" prefHeight="25.0" prefWidth="126.0" />
-                                <DatePicker fx:id="filterTo" layoutX="462.0" layoutY="21.0" onAction="#filterOrders" prefHeight="25.0" prefWidth="130.0" />
+                                <ComboBox fx:id="filterStatus" layoutX="14.0" layoutY="21.0" prefWidth="150.0" />
+                                <ComboBox fx:id="filterClients" layoutX="173.0" layoutY="21.0" prefWidth="150.0" />
+                                <DatePicker fx:id="filterFrom" layoutX="330.0" layoutY="21.0" prefHeight="25.0" prefWidth="126.0" />
+                                <DatePicker fx:id="filterTo" layoutX="462.0" layoutY="21.0" prefHeight="25.0" prefWidth="130.0" />
                                 <ListView fx:id="foodList" layoutX="412.8" layoutY="63.0" prefHeight="202.0" prefWidth="395.0" AnchorPane.leftAnchor="413.0" AnchorPane.rightAnchor="15.0" />
                                 <Button layoutX="284.0" layoutY="327.0" mnemonicParsing="false" onAction="#loadChatForm" text="View chat" />
+                        <Button layoutX="596.0" layoutY="21.0" mnemonicParsing="false" onAction="#filterOrders" prefHeight="26.0" prefWidth="74.0" text="Filter" />
                             </children></AnchorPane>
                     </content>
                 </Tab>

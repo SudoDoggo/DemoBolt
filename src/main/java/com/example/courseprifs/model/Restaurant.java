@@ -60,6 +60,6 @@ public class Restaurant extends BasicUser {
 
     @Override
     public String toString() {
-        return restaurantName;
+        return "Restaurant: " + restaurantName;
     }
 }
