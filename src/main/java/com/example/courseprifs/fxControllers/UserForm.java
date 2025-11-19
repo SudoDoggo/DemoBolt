@@ -13,21 +13,23 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ResourceBundle;
+import java.util.regex.Pattern;
 
 public class UserForm implements Initializable {
+    //<editor-fold desc="RadioButtons">
     public RadioButton userRadio;
     public RadioButton restaurantRadio;
     public RadioButton clientRadio;
     public RadioButton driverRadio;
+    //</editor-fold>
+    //<editor-fold desc="UserPane">
     public TextField loginField;
     public PasswordField passwordField;
-    public PasswordField rePasswordField;
     public TextField nameField;
     public TextField surnameField;
     public TextField phoneNumberField;
-    public Pane userField;
+    //</editor-fold>
     public Pane clientPane;
-    public TextField ClientAddress;
     public ToggleGroup userType;
     public TextField resName;
     public TextField resDesc;
@@ -54,6 +56,13 @@ public class UserForm implements Initializable {
     private User userForUpdate;
     private boolean isForUpdate;
 
+    private static final Pattern STRONG_PWD =
+            Pattern.compile("^(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z])(?=.*[^A-Za-z0-9])\\S{8,64}$");
+    private boolean isStrongPassword(String pwd) {
+        return pwd != null && STRONG_PWD.matcher(pwd).matches();
+    }
+
+
     public void setData(EntityManagerFactory entityManagerFactory, User user, boolean isForUpdate) {
         this.emf = entityManagerFactory;
         this.genericHibernate = new GenericHibernate(entityManagerFactory);
@@ -63,6 +72,20 @@ public class UserForm implements Initializable {
     }
 
     public void createNewUser(){
+        if (loginField.getText().isEmpty() || passwordField.getText().isEmpty()) {
+            FxUtils.generateAlert(Alert.AlertType.WARNING, "Missing Data", "Login or Password Missing", "Please fill in all login and password fields.");
+            return;
+        }
+        if (!isStrongPassword(passwordField.getText())) {
+            FxUtils.generateAlert(Alert.AlertType.ERROR, "Weak password",
+                    "Password does not meet requirements",
+                    "Use 8–64 characters with at least 1 uppercase, 1 lowercase, 1 digit, and 1 symbol. No spaces.");
+            return;
+        }
+        if (nameField.getText().isEmpty() || surnameField.getText().isEmpty()) {
+            FxUtils.generateAlert(Alert.AlertType.WARNING, "Missing Data", "Name or Surname Missing", "Please fill in all required personal information.");
+            return;
+        }
         if(userRadio.isSelected()){
             User user = new User(loginField.getText(),
                     passwordField.getText(),
@@ -72,6 +95,12 @@ public class UserForm implements Initializable {
                     LocalDateTime.now());
             genericHibernate.create(user);
         } else if(restaurantRadio.isSelected()){
+            if (resName.getText().isEmpty() || resDesc.getText().isEmpty() || resAddress.getText().isEmpty() ||
+                    resPhone.getText().isEmpty() || resEmail.getText().isEmpty() || resCuisineType.getValue() == null ||
+                    resDeliFee.getText().isEmpty() || resOpeningTime.getText().isEmpty() || resClosingTime.getText().isEmpty()) {
+                FxUtils.generateAlert(Alert.AlertType.WARNING, "Missing Data", "Incomplete Restaurant Info", "Please fill in all restaurant fields.");
+                return;
+            }
             Restaurant restaurant = new Restaurant(loginField.getText(),
                     passwordField.getText(),
                     nameField.getText(),

@@ -24,7 +24,8 @@ public class FoodOrder {
     private BasicUser buyer;
     @ManyToMany
     private List<Cuisine> cuisineList;
-    @OneToOne
+    @OneToOne(optional = true)
+    @JoinColumn(nullable = true)
     private Chat chat;
     @ManyToOne
     private Restaurant restaurant;

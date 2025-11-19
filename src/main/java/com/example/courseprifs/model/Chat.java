@@ -25,7 +25,7 @@ public class Chat {
     private LocalDate dateCreated;
     @OneToOne(mappedBy = "chat", cascade = CascadeType.ALL)
     private FoodOrder foodOrder;
-    @OneToMany(mappedBy = "chat", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "chat", cascade = CascadeType.ALL, fetch = FetchType.LAZY, orphanRemoval = true)
     private List<Review> messages;
 
     public Chat(String name, FoodOrder foodOrder) {
@@ -33,5 +33,10 @@ public class Chat {
         this.foodOrder = foodOrder;
         this.dateCreated = LocalDate.now();
         this.messages = new ArrayList<>();
+    }
+
+    @Override
+    public String toString() {
+        return name;
     }
 }

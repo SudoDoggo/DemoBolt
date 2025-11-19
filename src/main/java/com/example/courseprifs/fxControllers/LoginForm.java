@@ -57,8 +57,10 @@ public class LoginForm {
         UserForm userForm = fxmlLoader.getController();
         userForm.setData(entityManagerFactory, null, false);
 
+        Stage stage = new Stage();
         Scene scene = new Scene(parent);
-        Stage stage = (Stage) userField.getScene().getWindow();
+        stage.setScene(scene);
+        //Stage stage = (Stage) userField.getScene().getWindow();
         stage.setTitle("Register form");
         stage.setScene(scene);
         stage.show();

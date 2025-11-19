@@ -27,7 +27,9 @@ public class GenericHibernate {
         } catch (Exception e) {
             FxUtils.generateDialogAlert(Alert.AlertType.ERROR, "Something went wrong when creating", e);
         } finally {
-            if (entityManager != null) entityManager.close();
+            if (entityManager != null) {
+                entityManager.close();
+            }
         }
     }
 
@@ -78,13 +80,14 @@ public class GenericHibernate {
         List<T> list = new ArrayList<>();
         try {
             entityManager = entityManagerFactory.createEntityManager();
-            entityManager.getTransaction().begin();
             CriteriaQuery query = entityManager.getCriteriaBuilder().createQuery();
             query.select(query.from(entityClass));
             Query q = entityManager.createQuery(query);
             list = q.getResultList();
         } catch (Exception e) {
             FxUtils.generateDialogAlert(Alert.AlertType.ERROR, "Something went wrong when getting all records", e);
+        }finally {
+            if (entityManager != null) entityManager.close();
         }
         return list;
     }

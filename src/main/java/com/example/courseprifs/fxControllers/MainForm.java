@@ -221,6 +221,7 @@ public class MainForm implements Initializable {
             }
             userTable.getItems().addAll(data);
         } else if (managementTab.isSelected()) {
+            reloadManagementTab();
             clearAllOrderFields();
             List<FoodOrder> foodOrders = getFoodOrders();
             ordersList.getItems().addAll(foodOrders);
@@ -229,6 +230,7 @@ public class MainForm implements Initializable {
                     .toList();
             clientList.getItems().addAll(allbasicUser);
             filterClients.getItems().addAll(allbasicUser);
+            orderStatusComboBox.getItems().clear();
             orderStatusComboBox.getItems().addAll(OrderStatus.values());
             filterStatus.getItems().addAll(OrderStatus.values());
             if (currentUser instanceof Restaurant) {
@@ -251,6 +253,15 @@ public class MainForm implements Initializable {
             allChats.getItems().clear();
             allChats.getItems().addAll(customHibernate.getAllRecords(Chat.class));
         }
+    }
+
+    private void reloadManagementTab() {
+        clientList.getItems().clear();
+        filterClients.getItems().clear();
+        filterStatus.getItems().clear();
+        restaurantList.getItems().clear();
+        restaurantCombBox.getItems().clear();
+        orderStatusComboBox.getItems().clear();
     }
 
     private void clearAllOrderFields() {
@@ -309,6 +320,15 @@ public class MainForm implements Initializable {
     public void deleteUser() {
         User selectedUser = userListField.getSelectionModel().getSelectedItem();
         customHibernate.delete(User.class, selectedUser.getId());
+    }
+    @FXML
+    private void onDeleteUser() {
+            UserTableParameters selected = userTable.getSelectionModel().getSelectedItem();
+            if (selected == null) {
+                return;
+            }
+        customHibernate.delete(User.class, selected.getId());
+        userTable.getItems().remove(selected);
     }
 
     //</editor-fold>
@@ -408,7 +428,8 @@ public class MainForm implements Initializable {
 
     public void filterOrders() {
         clearAllOrderFields();
-        //ordersList.getItems().addAll(customHibernate.getFilteredRestaurantOrders(filterStatus.getValue(),filterClients.getValue(),filterFrom.getValue(),filterTo.getValue(),restaurantCombBox.getValue()));
+        ordersList.getItems().clear();
+        ordersList.getItems().addAll(customHibernate.getFilteredRestaurantOrders(filterStatus.getValue(),filterClients.getValue(),filterFrom.getValue(),filterTo.getValue(),restaurantCombBox.getValue()));
     }
 
     public void loadRestaurantMenuForOrder() {
@@ -457,6 +478,7 @@ public class MainForm implements Initializable {
         customHibernate.delete(Chat.class, allChats.getSelectionModel().getSelectedItem().getId());
         allChats.getItems().clear();
         allChats.getItems().addAll(customHibernate.getAllRecords(Chat.class));
+        chatMessages.getItems().clear();
     }
     //</editor-fold>
     //<editor-fold desc="MessageControl">
