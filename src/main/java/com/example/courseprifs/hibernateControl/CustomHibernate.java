@@ -1,13 +1,14 @@
 package com.example.courseprifs.hibernateControl;
 
-import com.example.courseprifs.fxControllers.FxUtils;
+import com.example.courseprifs.utils.FxUtils;
 import com.example.courseprifs.model.*;
+import com.example.courseprifs.utils.PasswordUtils;
 import jakarta.persistence.EntityManagerFactory;
+import jakarta.persistence.NoResultException;
 import jakarta.persistence.Query;
 import jakarta.persistence.TypedQuery;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.CriteriaQuery;
-import jakarta.persistence.criteria.Predicate;
 import jakarta.persistence.criteria.Root;
 import javafx.scene.control.Alert;
 
@@ -28,12 +29,18 @@ public class CustomHibernate extends GenericHibernate {
             CriteriaQuery<User> query = cb.createQuery(User.class);
             Root<User> root = query.from(User.class);
 
-            query.select(root).where(cb.and(cb.equal(root.get("login"), login),
-                    cb.equal(root.get("password"), psw)));
+            // First, find user by login only (password is hashed, so we can't compare in query)
+            query.select(root).where(cb.equal(root.get("login"), login));
             Query q = entityManager.createQuery(query);
             user = (User) q.getSingleResult();
+            
+            // Then verify the password using BCrypt
+            if (user != null && !PasswordUtils.verifyPassword(psw, user.getPassword())) {
+                user = null; // Password doesn't match
+            }
         } catch (Exception e) {
-            FxUtils.generateDialogAlert(Alert.AlertType.ERROR, "Something went wrong when getting information", e);
+            // User not found or password doesn't match
+            user = null;
         }finally {
             if (entityManager != null) entityManager.close();
         }
@@ -44,13 +51,10 @@ public class CustomHibernate extends GenericHibernate {
         List<FoodOrder> orders = new ArrayList<>();
         try {
             entityManager = entityManagerFactory.createEntityManager();
-            CriteriaBuilder cb = entityManager.getCriteriaBuilder();
-            CriteriaQuery<FoodOrder> query = cb.createQuery(FoodOrder.class);
-            Root<FoodOrder> root = query.from(FoodOrder.class);
-
-            query.select(root).where(cb.equal(root.get("restaurant"), restaurant));
-            Query q = entityManager.createQuery(query);
-            orders = q.getResultList();
+            String jpql = "SELECT DISTINCT o FROM FoodOrder o LEFT JOIN FETCH o.cuisineList WHERE o.restaurant = :restaurant";
+            TypedQuery<FoodOrder> query = entityManager.createQuery(jpql, FoodOrder.class);
+            query.setParameter("restaurant", restaurant);
+            orders = query.getResultList();
         } catch (Exception e) {
             FxUtils.generateDialogAlert(Alert.AlertType.ERROR, "Something went wrong when getting information", e);
         }finally {
@@ -59,6 +63,7 @@ public class CustomHibernate extends GenericHibernate {
         return orders;
     }
 
+    @SuppressWarnings("unchecked")
     public List<Cuisine> getRestaurantCuisine(Restaurant restaurant) {
         List<Cuisine> menu = new ArrayList<>();
         try {
@@ -69,7 +74,7 @@ public class CustomHibernate extends GenericHibernate {
 
             query.select(root).where(cb.equal(root.get("restaurant"), restaurant));
             Query q = entityManager.createQuery(query);
-            menu = q.getResultList();
+            menu = (List<Cuisine>) q.getResultList();
         } catch (Exception e) {
             FxUtils.generateDialogAlert(Alert.AlertType.ERROR, "Something went wrong when getting information", e);
         }finally{
@@ -79,38 +84,43 @@ public class CustomHibernate extends GenericHibernate {
     }
 
     public List<FoodOrder> getFilteredRestaurantOrders(OrderStatus status,BasicUser client, LocalDate from, LocalDate to, Restaurant restaurant) {
-        entityManager = entityManagerFactory.createEntityManager();
+        List<FoodOrder> orders = new ArrayList<>();
+        try {
+            entityManager = entityManagerFactory.createEntityManager();
 
-        StringBuilder jpql = new StringBuilder("SELECT o FROM FoodOrder o WHERE 1=1");
-        Map<String, Object> params = new HashMap<>();
+            StringBuilder jpql = new StringBuilder("SELECT DISTINCT o FROM FoodOrder o LEFT JOIN FETCH o.cuisineList WHERE 1=1");
+            Map<String, Object> params = new HashMap<>();
 
-        if (status != null) {
-            jpql.append(" AND o.orderStatus = :status");   // <- orderStatus
-            params.put("status", status);
-        }
-        if (client != null) {
-            jpql.append(" AND o.buyer = :client");         // <- buyer
-            params.put("client", client);
-        }
-        if (restaurant != null) {
-            jpql.append(" AND o.restaurant = :restaurant");
-            params.put("restaurant", restaurant);
-        }
-        if (from != null) {
-            jpql.append(" AND o.dateCreated >= :from");
-            params.put("from", from); // LocalDate matches the field type
-        }
-        if (to != null) {
-            jpql.append(" AND o.dateCreated <= :to");
-            params.put("to", to);
-        }
+            if (status != null) {
+                jpql.append(" AND o.orderStatus = :status");
+                params.put("status", status);
+            }
+            if (client != null) {
+                jpql.append(" AND o.buyer = :client");
+                params.put("client", client);
+            }
+            if (restaurant != null) {
+                jpql.append(" AND o.restaurant = :restaurant");
+                params.put("restaurant", restaurant);
+            }
+            if (from != null) {
+                jpql.append(" AND o.dateCreated >= :from");
+                params.put("from", from);
+            }
+            if (to != null) {
+                jpql.append(" AND o.dateCreated <= :to");
+                params.put("to", to);
+            }
 
-        TypedQuery<FoodOrder> query =
-                entityManager.createQuery(jpql.toString(), FoodOrder.class);
-
-        params.forEach(query::setParameter);
-
-        return query.getResultList();
+            TypedQuery<FoodOrder> query = entityManager.createQuery(jpql.toString(), FoodOrder.class);
+            params.forEach(query::setParameter);
+            orders = query.getResultList();
+        } catch (Exception e) {
+            FxUtils.generateDialogAlert(Alert.AlertType.ERROR, "Something went wrong when filtering orders", e);
+        } finally {
+            if (entityManager != null) entityManager.close();
+        }
+        return orders;
     }
 
 
@@ -146,5 +156,150 @@ public class CustomHibernate extends GenericHibernate {
             if (entityManager != null) entityManager.close();
         }
         return order;
+    }
+
+    public FoodOrder getFoodOrderWithItems(int orderId) {
+        FoodOrder order = null;
+        try {
+            entityManager = entityManagerFactory.createEntityManager();
+            String jpql = "SELECT DISTINCT o FROM FoodOrder o LEFT JOIN FETCH o.cuisineList WHERE o.id = :orderId";
+            TypedQuery<FoodOrder> query = entityManager.createQuery(jpql, FoodOrder.class);
+            query.setParameter("orderId", orderId);
+            order = query.getSingleResult();
+        } catch (Exception e) {
+            FxUtils.generateDialogAlert(Alert.AlertType.ERROR,
+                    "Something went wrong when getting order with items", e);
+        } finally {
+            if (entityManager != null) entityManager.close();
+        }
+        return order;
+    }
+
+    public void removeCuisineFromOrder(int orderId, int cuisineId) {
+        try {
+            entityManager = entityManagerFactory.createEntityManager();
+            entityManager.getTransaction().begin();
+
+            String jpql = "SELECT DISTINCT o FROM FoodOrder o LEFT JOIN FETCH o.cuisineList WHERE o.id = :orderId";
+            TypedQuery<FoodOrder> query = entityManager.createQuery(jpql, FoodOrder.class);
+            query.setParameter("orderId", orderId);
+            FoodOrder order;
+            try {
+                order = query.getSingleResult();
+            } catch (NoResultException e) {
+                FxUtils.generateAlert(Alert.AlertType.ERROR, "Error", "Order not found", 
+                        "Could not find the order with ID: " + orderId);
+                entityManager.getTransaction().rollback();
+                return;
+            }
+
+            Cuisine cuisineToRemove = entityManager.find(Cuisine.class, cuisineId);
+            
+            if (cuisineToRemove == null) {
+                FxUtils.generateAlert(Alert.AlertType.ERROR, "Error", "Cuisine not found", 
+                        "Could not find the cuisine with ID: " + cuisineId);
+                entityManager.getTransaction().rollback();
+                return;
+            }
+
+            if (order.getCuisineList() != null && order.getCuisineList().contains(cuisineToRemove)) {
+                order.getCuisineList().remove(cuisineToRemove);
+
+                if (order.getPrice() != null && cuisineToRemove.getPrice() != null) {
+                    double newPrice = order.getPrice() - cuisineToRemove.getPrice();
+                    order.setPrice(Math.max(0, newPrice));
+                }
+
+                order.setDateUpdated(LocalDate.now());
+
+                entityManager.merge(order);
+                entityManager.getTransaction().commit();
+            } else {
+                FxUtils.generateAlert(Alert.AlertType.WARNING, "Warning", "Item not in order", 
+                        "The selected cuisine is not part of this order.");
+                entityManager.getTransaction().rollback();
+            }
+        } catch (Exception e) {
+            FxUtils.generateDialogAlert(Alert.AlertType.ERROR, 
+                    "Something went wrong when removing cuisine from order", e);
+            if (entityManager != null && entityManager.getTransaction().isActive()) {
+                entityManager.getTransaction().rollback();
+            }
+        } finally {
+            if (entityManager != null) {
+                entityManager.close();
+            }
+        }
+    }
+
+    public List<FoodOrder> getAllFoodOrdersWithItems() {
+        List<FoodOrder> orders = new ArrayList<>();
+        try {
+            entityManager = entityManagerFactory.createEntityManager();
+            String jpql = "SELECT DISTINCT o FROM FoodOrder o LEFT JOIN FETCH o.cuisineList";
+            TypedQuery<FoodOrder> query = entityManager.createQuery(jpql, FoodOrder.class);
+            orders = query.getResultList();
+        } catch (Exception e) {
+            FxUtils.generateDialogAlert(Alert.AlertType.ERROR, "Something went wrong when getting all orders with items", e);
+        } finally {
+            if (entityManager != null) entityManager.close();
+        }
+        return orders;
+    }
+
+    public List<User> getFilteredUsers(String userType, String login, String name, String surname) {
+        List<User> users = new ArrayList<>();
+        try {
+            entityManager = entityManagerFactory.createEntityManager();
+            StringBuilder jpql = new StringBuilder("SELECT u FROM User u WHERE 1=1");
+            Map<String, Object> params = new HashMap<>();
+
+            if (userType != null && !userType.trim().isEmpty() && !userType.equals("All users")) {
+                Class<? extends User> userTypeClass = null;
+                switch (userType) {
+                    case "User":
+                        userTypeClass = User.class;
+                        break;
+                    case "BasicUser":
+                        userTypeClass = BasicUser.class;
+                        break;
+                    case "Restaurant":
+                        userTypeClass = Restaurant.class;
+                        break;
+                    case "Driver":
+                        userTypeClass = Driver.class;
+                        break;
+                    default:
+                        userTypeClass = null;
+                        break;
+                }
+                if (userTypeClass != null) {
+                    jpql.append(" AND TYPE(u) = :userType");
+                    params.put("userType", userTypeClass);
+                }
+            }
+            // If userType is "All users" or empty, don't filter by type (show all)
+            if (login != null && !login.trim().isEmpty()) {
+                jpql.append(" AND LOWER(u.login) LIKE LOWER(:login)");
+                params.put("login", "%" + login.trim() + "%");
+            }
+            if (name != null && !name.trim().isEmpty()) {
+                jpql.append(" AND LOWER(u.name) LIKE LOWER(:name)");
+                params.put("name", "%" + name.trim() + "%");
+            }
+            if (surname != null && !surname.trim().isEmpty()) {
+                jpql.append(" AND LOWER(u.surname) LIKE LOWER(:surname)");
+                params.put("surname", "%" + surname.trim() + "%");
+            }
+
+            TypedQuery<User> query = entityManager.createQuery(jpql.toString(), User.class);
+            params.forEach(query::setParameter);
+            users = query.getResultList();
+        } catch (Exception e) {
+            FxUtils.generateDialogAlert(Alert.AlertType.ERROR, "Something went wrong when filtering users", e);
+        } finally {
+            if (entityManager != null) entityManager.close();
+        }
+        return users;
     }
 }

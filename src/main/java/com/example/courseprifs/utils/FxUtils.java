@@ -1,4 +1,4 @@
-package com.example.courseprifs.fxControllers;
+package com.example.courseprifs.utils;
 
 import javafx.scene.control.Alert;
 import javafx.scene.control.Label;
