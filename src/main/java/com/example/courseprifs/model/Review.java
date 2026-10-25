@@ -43,6 +43,6 @@ public class Review {
 
     @Override
     public String toString() {
-        return  commentOwner.getName()+": " + reviewText;
+        return reviewText;
     }
 }
