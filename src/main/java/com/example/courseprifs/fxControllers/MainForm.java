@@ -97,6 +97,8 @@ public class MainForm implements Initializable {
     private EntityManagerFactory entityManagerFactory;
     private CustomHibernate customHibernate;
     private User currentUser;
+    /** True while tabs are being removed, so selection changes do not reload data mid-update. */
+    private boolean adjustingTabs;
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -159,40 +161,38 @@ public class MainForm implements Initializable {
         this.entityManagerFactory = entityManagerFactory;
         this.currentUser = user;
         this.customHibernate = new CustomHibernate(entityManagerFactory);
-        reloadTableData();
         setUserFormVisibility();
+        reloadTableData();
     }
 
     private void setUserFormVisibility() {
-        if (!currentUser.isAdmin()) {
+        if (currentUser.isAdmin()) {
+            return;
+        }
+        // Removing the selected tab makes TabPane select another tab immediately.
+        // That fires onSelectionChanged -> reloadTableData before the other tabs are gone.
+        adjustingTabs = true;
+        try {
             if (currentUser instanceof Restaurant) {
-                tabsPane.getTabs().remove(altTab);
-                tabsPane.getTabs().remove(userTab);
-                tabsPane.getTabs().remove(chatTab);
-            } else if (currentUser instanceof BasicUser) {
-                tabsPane.getTabs().remove(altTab);
-                tabsPane.getTabs().remove(userTab);
-                tabsPane.getTabs().remove(foodTab);
-                tabsPane.getTabs().remove(managementTab);
-                tabsPane.getTabs().remove(chatTab);
+                tabsPane.getTabs().removeAll(altTab, userTab, chatTab);
             } else if (currentUser instanceof Driver) {
-                tabsPane.getTabs().remove(altTab);
-                tabsPane.getTabs().remove(userTab);
-                tabsPane.getTabs().remove(foodTab);
-                tabsPane.getTabs().remove(managementTab);
-                tabsPane.getTabs().remove(chatTab);
+                tabsPane.getTabs().removeAll(altTab, userTab, foodTab, managementTab, chatTab);
+            } else if (currentUser instanceof BasicUser) {
+                tabsPane.getTabs().removeAll(altTab, userTab, foodTab, managementTab, chatTab);
             } else if (currentUser instanceof User) {
-                tabsPane.getTabs().remove(altTab);
-                tabsPane.getTabs().remove(userTab);
-                tabsPane.getTabs().remove(foodTab);
-                tabsPane.getTabs().remove(managementTab);
-
+                tabsPane.getTabs().removeAll(altTab, userTab, foodTab, managementTab);
             }
+        } finally {
+            adjustingTabs = false;
         }
     }
 
     //<editor-fold desc="User Tab functionality">
     public void reloadTableData() {
+        // Fires while FXML is still loading tabs, before LoginForm calls setData().
+        if (adjustingTabs || customHibernate == null || currentUser == null) {
+            return;
+        }
         if (userTab.isSelected()) {
             data.clear();
             userTable.getItems().clear();
@@ -224,7 +224,9 @@ public class MainForm implements Initializable {
             reloadManagementTab();
             clearAllOrderFields();
             List<FoodOrder> foodOrders = getFoodOrders();
-            ordersList.getItems().addAll(foodOrders);
+            if (foodOrders != null) {
+                ordersList.getItems().addAll(foodOrders);
+            }
             List<BasicUser> allbasicUser = customHibernate.getAllRecords(BasicUser.class).stream()
                     .filter(u -> u.getClass() == BasicUser.class)
                     .toList();
@@ -340,7 +342,7 @@ public class MainForm implements Initializable {
         } else if (currentUser.isAdmin()) {
             return customHibernate.getAllRecords(FoodOrder.class);
         }
-        return null;
+        return List.of();
     }
 
     public static boolean isNumeric(String str) {
