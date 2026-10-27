@@ -13,6 +13,7 @@ module com.example.courseprifs {
     requires org.kordamp.bootstrapfx.core;
     requires javafx.graphics;
     requires javafx.base;
+    requires jbcrypt;
     //requires com.example.courseprifs;
 
     opens com.example.courseprifs to javafx.fxml;
@@ -21,4 +22,6 @@ module com.example.courseprifs {
     exports com.example.courseprifs.fxControllers;
     opens com.example.courseprifs.model to org.hibernate.orm.core;
     exports com.example.courseprifs.model;
+    exports com.example.courseprifs.utils;
+    opens com.example.courseprifs.utils to javafx.fxml;
 }

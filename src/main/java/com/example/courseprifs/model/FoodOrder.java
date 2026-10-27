@@ -23,12 +23,15 @@ public class FoodOrder {
     @ManyToOne
     private BasicUser buyer;
     @ManyToMany
+    @JoinTable(name = "foodorder_cuisine", joinColumns = @JoinColumn(name = "foodorder_id"), inverseJoinColumns = @JoinColumn(name = "cuisine_id"))
     private List<Cuisine> cuisineList;
     @OneToOne(optional = true)
     @JoinColumn(nullable = true)
     private Chat chat;
     @ManyToOne
     private Restaurant restaurant;
+    @ManyToOne
+    private Driver driver;
     @Enumerated(EnumType.STRING)
     private OrderStatus orderStatus;
     private LocalDate dateCreated;

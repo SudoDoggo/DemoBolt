@@ -1,6 +1,6 @@
 package com.example.courseprifs.hibernateControl;
 
-import com.example.courseprifs.fxControllers.FxUtils;
+import com.example.courseprifs.utils.FxUtils;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Query;
@@ -85,7 +85,7 @@ public class GenericHibernate {
             Query q = entityManager.createQuery(query);
             list = q.getResultList();
         } catch (Exception e) {
-            FxUtils.generateDialogAlert(Alert.AlertType.ERROR, "Something went wrong when getting all records", e);
+            //FxUtils.generateDialogAlert(Alert.AlertType.ERROR, "Something went wrong when getting all records", e);
         }finally {
             if (entityManager != null) entityManager.close();
         }

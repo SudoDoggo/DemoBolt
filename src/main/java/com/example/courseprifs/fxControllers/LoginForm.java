@@ -2,11 +2,11 @@ package com.example.courseprifs.fxControllers;
 
 import com.example.courseprifs.HelloApplication;
 import com.example.courseprifs.hibernateControl.CustomHibernate;
+import com.example.courseprifs.model.Restaurant;
 import com.example.courseprifs.model.User;
-import jakarta.persistence.EntityManager;
+import com.example.courseprifs.utils.FxUtils;
 import jakarta.persistence.EntityManagerFactory;
 import jakarta.persistence.Persistence;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Parent;
@@ -32,7 +32,7 @@ public class LoginForm {
     public void validateAndLoad() throws IOException {
         CustomHibernate customHibernate = new CustomHibernate(entityManagerFactory);
         User user = customHibernate.getUserByCredentials(userField.getText(), passwordField.getText());
-        if (user != null) {
+        if (user != null && (user.isAdmin() || user instanceof Restaurant)) {
 
             FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("main-form.fxml"));
             Parent parent = fxmlLoader.load();
@@ -56,14 +56,31 @@ public class LoginForm {
 
         UserForm userForm = fxmlLoader.getController();
         userForm.setData(entityManagerFactory, null, false);
+        userForm.setLoginFormReference(this);
 
-        Stage stage = new Stage();
         Scene scene = new Scene(parent);
-        stage.setScene(scene);
-        //Stage stage = (Stage) userField.getScene().getWindow();
+        Stage stage = (Stage) userField.getScene().getWindow();
         stage.setTitle("Register form");
         stage.setScene(scene);
         stage.show();
+    }
+
+    public void switchBackToLogin(Stage stage) throws IOException {
+        FXMLLoader fxmlLoader = new FXMLLoader(HelloApplication.class.getResource("login-form.fxml"));
+        Parent parent = fxmlLoader.load();
+
+        Scene scene = new Scene(parent);
+        if (stage == null) {
+            stage = (Stage) userField.getScene().getWindow();
+        }
+        stage.setTitle("Login form");
+        stage.setScene(scene);
+        stage.show();
+    }
+
+    public void switchBackToLogin() throws IOException {
+        Stage stage = (Stage) userField.getScene().getWindow();
+        switchBackToLogin(stage);
     }
 
 
