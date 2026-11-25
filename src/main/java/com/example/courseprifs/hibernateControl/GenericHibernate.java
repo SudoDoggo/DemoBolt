@@ -1,96 +1,113 @@
 package com.example.courseprifs.hibernateControl;
 
-import com.example.courseprifs.utils.FxUtils;
+import com.example.courseprifs.utils.FxUserNotifier;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityManagerFactory;
-import jakarta.persistence.Query;
 import jakarta.persistence.criteria.CriteriaQuery;
-import javafx.scene.control.Alert;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Function;
 
+/**
+ * Bendri CRUD veiksmai visoms esybėms.
+ * <p>
+ * EntityManager gyvavimo ciklas (sukūrimas, transakcija, rollback, uždarymas) ir klaidų
+ * apdorojimas aprašyti vieną kartą metoduose {@link #executeInTransaction} ir
+ * {@link #executeQuery}, todėl konkretūs metodai aprašo tik savo DB veiksmą.
+ */
 public class GenericHibernate {
-    protected EntityManagerFactory entityManagerFactory;
-    protected EntityManager entityManager;
+
+    private final EntityManagerFactory entityManagerFactory;
+    private final UserNotifier notifier;
 
     public GenericHibernate(EntityManagerFactory entityManagerFactory) {
+        this(entityManagerFactory, new FxUserNotifier());
+    }
+
+    public GenericHibernate(EntityManagerFactory entityManagerFactory, UserNotifier notifier) {
         this.entityManagerFactory = entityManagerFactory;
+        this.notifier = notifier;
     }
 
     public <T> void create(T entity) {
-        try {
-            entityManager = entityManagerFactory.createEntityManager();
-            entityManager.getTransaction().begin();
-            entityManager.persist(entity);
-            entityManager.getTransaction().commit();
-        } catch (Exception e) {
-            FxUtils.generateDialogAlert(Alert.AlertType.ERROR, "Something went wrong when creating", e);
-        } finally {
-            if (entityManager != null) {
-                entityManager.close();
-            }
-        }
+        executeInTransaction(em -> em.persist(entity), "Something went wrong when creating");
     }
 
     public <T> void update(T entity) {
-        try {
-            entityManager = entityManagerFactory.createEntityManager();
-            entityManager.getTransaction().begin();
-            entityManager.merge(entity); //UPDATE
-            entityManager.getTransaction().commit();
-        } catch (Exception e) {
-            FxUtils.generateDialogAlert(Alert.AlertType.ERROR, "Something went wrong when updating", e);
-        } finally {
-            if (entityManager != null) entityManager.close();
-        }
+        executeInTransaction(em -> em.merge(entity), "Something went wrong when updating");
     }
 
     public <T> T getEntityById(Class<T> entityClass, int id) {
-        T entity = null;
-        try {
-            entityManager = entityManagerFactory.createEntityManager();
-            entityManager.getTransaction().begin();
-            entity = entityManager.find(entityClass, id);
-            entityManager.getTransaction().commit();
-        } catch (Exception e) {
-            FxUtils.generateDialogAlert(Alert.AlertType.ERROR, "Failed to get information from data base", e);
-        } finally {
-            if (entityManager != null) entityManager.close();
-        }
-        return entity;
+        return executeQuery(em -> em.find(entityClass, id), null, "Failed to get information from data base");
     }
 
-    //Gali buti blogai su detached entity
+    /** Jei įrašo nėra, remove(null) meta išimtį ir vartotojui parodomas klaidos langas. */
     public <T> void delete(Class<T> entityClass, int id) {
-        try {
-            entityManager = entityManagerFactory.createEntityManager();
-            entityManager.getTransaction().begin();
-            T entity = entityManager.find(entityClass, id);
-            entityManager.remove(entity); //DELETE
-            entityManager.getTransaction().commit();
-        } catch (Exception e) {
-            FxUtils.generateDialogAlert(Alert.AlertType.ERROR, "Something went wrong when deleting", e);
-        } finally {
-            if (entityManager != null) entityManager.close();
-        }
+        executeInTransaction(em -> em.remove(em.find(entityClass, id)), "Something went wrong when deleting");
     }
 
     public <T> List<T> getAllRecords(Class<T> entityClass) {
-        List<T> list = new ArrayList<>();
-        try {
-            entityManager = entityManagerFactory.createEntityManager();
-            CriteriaQuery query = entityManager.getCriteriaBuilder().createQuery();
+        return executeQueryIgnoringErrors(em -> {
+            CriteriaQuery<T> query = em.getCriteriaBuilder().createQuery(entityClass);
             query.select(query.from(entityClass));
-            Query q = entityManager.createQuery(query);
-            list = q.getResultList();
-        } catch (Exception e) {
-            //FxUtils.generateDialogAlert(Alert.AlertType.ERROR, "Something went wrong when getting all records", e);
-        }finally {
-            if (entityManager != null) entityManager.close();
-        }
-        return list;
+            return em.createQuery(query).getResultList();
+        }, new ArrayList<>());
     }
 
+    protected UserNotifier notifier() {
+        return notifier;
+    }
 
+    /** Vykdo rašymo veiksmą transakcijoje. Klaidos atveju transakcija atšaukiama ir parodomas langas. */
+    protected void executeInTransaction(Consumer<EntityManager> action, String errorHeader) {
+        EntityManager em = null;
+        try {
+            em = entityManagerFactory.createEntityManager();
+            em.getTransaction().begin();
+            action.accept(em);
+            em.getTransaction().commit();
+        } catch (Exception e) {
+            rollbackIfActive(em);
+            notifier.error(errorHeader, e);
+        } finally {
+            closeIfOpen(em);
+        }
+    }
+
+    /** Vykdo skaitymo užklausą. Klaidos atveju parodo langą ir grąžina {@code fallback}. */
+    protected <R> R executeQuery(Function<EntityManager, R> query, R fallback, String errorHeader) {
+        return runQuery(query, fallback, e -> notifier.error(errorHeader, e));
+    }
+
+    /** Vykdo skaitymo užklausą. Klaidos atveju tyliai grąžina {@code fallback} (be lango). */
+    protected <R> R executeQueryIgnoringErrors(Function<EntityManager, R> query, R fallback) {
+        return runQuery(query, fallback, e -> { });
+    }
+
+    private <R> R runQuery(Function<EntityManager, R> query, R fallback, Consumer<Exception> onError) {
+        EntityManager em = null;
+        try {
+            em = entityManagerFactory.createEntityManager();
+            return query.apply(em);
+        } catch (Exception e) {
+            onError.accept(e);
+            return fallback;
+        } finally {
+            closeIfOpen(em);
+        }
+    }
+
+    private static void rollbackIfActive(EntityManager em) {
+        if (em != null && em.getTransaction().isActive()) {
+            em.getTransaction().rollback();
+        }
+    }
+
+    private static void closeIfOpen(EntityManager em) {
+        if (em != null) {
+            em.close();
+        }
+    }
 }
