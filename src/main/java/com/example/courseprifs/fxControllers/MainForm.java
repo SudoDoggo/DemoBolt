@@ -138,7 +138,7 @@ public class MainForm implements Initializable {
             });
         }
 
-        userTypeBox.getItems().addAll("All users", "User", "BasicUser", "Restaurant", "Driver");
+        userTypeBox.getItems().addAll(CustomHibernate.ALL_USERS, "User", "BasicUser", "Restaurant", "Driver");
         passCol.setCellFactory(TextFieldTableCell.forTableColumn());
         passCol.setOnEditCommit(event -> {
             String newPassword = event.getNewValue();
